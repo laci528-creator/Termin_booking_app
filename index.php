@@ -100,7 +100,6 @@ if (isset(ORDINATION_ZEITEN[$dt->format('N')])) {
     echo "Diese Tageszeit hat keine Ordination.";
 }
 
-
 ?>
 
 <!doctype html>
@@ -113,7 +112,7 @@ if (isset(ORDINATION_ZEITEN[$dt->format('N')])) {
 	<body>
         <h1>Terminvereinbarung</h1>
         <h2>Kalender</h2>
-            <table border="5px" cellpadding="15" cellspacing="0">
+            <table border="3" cellpadding="5" cellspacing="0">
                 <tr>
                     <th>H</th><th>K</th><th>Sze</th><th>Cs</th><th>P</th><th>Szo</th><th>V</th>
                 </tr>
@@ -158,10 +157,9 @@ if (isset(ORDINATION_ZEITEN[$dt->format('N')])) {
             }
             
             ?>
-
-
-
-
+            <h2>Admin seite</h2>
+            <p>Um die Admin-Seite zu betreten, klicken Sie bitte auf den folgenden Link:</p>
+            <button><a href="einloggen.php">Admin-Seite betreten</a></button>
 
     </body>     
 </html>
