@@ -11,6 +11,7 @@ $conn = dbConnect();
 
 
 if(isset($_POST['NN'], $_POST['TN'], $_POST['E'], $_POST['VN'], $_POST['ANF'], $_POST['GD'], $_POST['T'])) {
+    // prüfen, ob die Werte leer sind; wenn ja, Fehlermeldung zurückgeben; wenn nein, in die Datenbank einfügen
     $nachname = pruefeAufLeer($_POST['NN']);
     $telefon = pruefeAufLeer($_POST['TN']);
     $email = pruefeAufLeer($_POST['E']);
@@ -36,8 +37,6 @@ if(isset($_POST['NN'], $_POST['TN'], $_POST['E'], $_POST['VN'], $_POST['ANF'], $
     }
 }
 
-
-
 $selecteddatum = $_GET['datum'] ?? '';
 $selectedtermin = $_GET['termin'] ?? '';
 $terminende= date('H:i:s', strtotime($selectedtermin) + 30 * 60);
@@ -57,10 +56,10 @@ $terminende= date('H:i:s', strtotime($selectedtermin) + 30 * 60);
         <h2>Formular</h2>
 		<form method="post">
 			<fieldset>
-				<legend>Pflichtangaben</legend>
+				<legend>Personaldaten</legend>
                 <label>
-					Nachname:
-					<input type="text" name="NN">
+					Name:
+					<input type="text" name="NN" required>
 				</label>
                 <label>
                     Telefonnummer:
@@ -72,25 +71,25 @@ $terminende= date('H:i:s', strtotime($selectedtermin) + 30 * 60);
 				</label>
 			</fieldset>
 			<fieldset>
-				<legend>Freiwillige Angaben</legend>
+				<legend>Termindaten</legend>
 				<label>
 					Datum:
-					<input type="text" name="VN" value="<?php echo htmlspecialchars($selecteddatum); ?>">
+					<input type="text" name="VN" value="<?php echo htmlspecialchars($selecteddatum); ?>" readonly>
 				</label>
 				<label>
 					Anfangszeit:
-					<input type="text" name="ANF" value="<?php echo htmlspecialchars($selectedtermin); ?>">
+					<input type="text" name="ANF" value="<?php echo htmlspecialchars($selectedtermin); ?>" readonly>
 				</label>
 				<label>
 					endezeit:
-					<input type="text" name="GD" value="<?php echo htmlspecialchars($terminende); ?>">
+					<input type="text" name="GD" value="<?php echo htmlspecialchars($terminende); ?>" readonly>
 				</label>
                 <label>
-                    Termin_bemerkung:
-                    <input type="text" name="T">    
+                    Bemerkung für den Arzt:
+                    <textarea name="T" rows="4" cols="50"></textarea>
                 </label>
 			</fieldset>
-			<input type="submit" value="registrieren">
+			<input type="submit" value="Termin buchen">
 		</form>
 	</body>
 </html>

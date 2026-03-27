@@ -9,8 +9,14 @@ $conn = dbConnect();
 session_start();
 
 
-if(count($_POST)>0) {
-	if(isset($_POST["btnLogout"])) {
+if (empty($_SESSION["eingeloggt"])) {
+    header("Location: einloggen.php");
+    exit;
+}
+
+
+if (count($_POST) > 0) {
+	if (isset($_POST["btnLogout"])) {
 		
 		$_SESSION = [];
 		
@@ -23,31 +29,29 @@ if(count($_POST)>0) {
 				$params["path"],
 				$params["domain"],
 				$params["secure"],
-				$params["httponly"],
+				$params["httponly"]
 
 			);
 		}
 		
 		session_destroy();
         header("Location: einloggen.php");  
+        exit;
 
 	}
 }
 
-function ketHetDatumai($induloDatum) {
-    $datumok = [];
-    $datum = new DateTime($induloDatum);
+
+function zweiWochenDaten(string $startdatum): array {
+    $daten = [];
+    $datum = new DateTime($startdatum);
 
     for ($i = 0; $i < 14; $i++) {
-        $datumok[] = $datum->format('Y-m-d');
+        $daten[] = $datum->format('Y-m-d');
         $datum->modify('+1 day');
     }
-
-    return $datumok;
+    return $daten;
 }
-
-
-
 
 
 ?>
@@ -71,36 +75,42 @@ function ketHetDatumai($induloDatum) {
     </tr>   
 <?php
 
-$gefragtedatum = $_SESSION["date"];
-$alledatumok = ketHetDatumai($gefragtedatum);
-
-foreach($alledatumok as $datum) {
-
-$sql = "SELECT 
-            gespeicherte_termin.datum, 
-            gespeicherte_termin.anfang_zeit, 
-            gespeicherte_termin.ende_zeit,
-            kunden.name,
-            kunden.telefon,
-            kunden.email
-        FROM gespeicherte_termin
-        JOIN kunden ON gespeicherte_termin.kunden_id = kunden.id
-        WHERE datum = '$datum'
-        order by datum, anfang_zeit ASC
- 
- ";
-$result = dbQuery($conn, $sql);
-
-while($data = dbFetch($result)) {
-    echo "<tr>";
-    echo "<td>" . htmlspecialchars($data->datum) . "</td>";
-    echo "<td>" . htmlspecialchars($data->anfang_zeit) . "</td>";
-    echo "<td>" . htmlspecialchars($data->ende_zeit) . "</td>";
-    echo "<td>" . htmlspecialchars($data->name) . "</td>";
-    echo "<td>" . htmlspecialchars($data->telefon) . "</td>";
-    echo "<td>" . htmlspecialchars($data->email) . "</td>";
-    echo "</tr>";
+$gefragtedatum = $_SESSION["date"] ?? '';
+if ($gefragtedatum === '') {
+    echo "<p>Kein Startdatum in der Sitzung gefunden.</p>";
+    exit;
 }
+
+
+$alledate = zweiWochenDaten($gefragtedatum);
+
+
+foreach($alledate as $datum) {
+            $sql = "SELECT 
+                        gespeicherte_termin.datum, 
+                        gespeicherte_termin.anfang_zeit, 
+                        gespeicherte_termin.ende_zeit,
+                        kunden.name,
+                        kunden.telefon,
+                        kunden.email
+                    FROM gespeicherte_termin
+                    JOIN kunden ON gespeicherte_termin.kunden_id = kunden.id
+                    WHERE datum = '$datum'
+                    order by datum, anfang_zeit ASC
+            
+            ";
+            $result = dbQuery($conn, $sql);
+
+            while($data = dbFetch($result)) {
+                echo "<tr>";
+                echo "<td>" . htmlspecialchars($data->datum) . "</td>";
+                echo "<td>" . htmlspecialchars($data->anfang_zeit) . "</td>";
+                echo "<td>" . htmlspecialchars($data->ende_zeit) . "</td>";
+                echo "<td>" . htmlspecialchars($data->name) . "</td>";
+                echo "<td>" . htmlspecialchars($data->telefon) . "</td>";
+                echo "<td>" . htmlspecialchars($data->email) . "</td>";
+                echo "</tr>";
+            }
 }
 ?>
 </table>
