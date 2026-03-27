@@ -8,6 +8,15 @@ require("includes/db.inc.php");
 $conn = dbConnect();
 
 
+if (count($_POST) > 0) {
+	if (isset($_POST["btnLogout"])) {
+		
+		$_SESSION = [];
+        header("Location: index.php");  
+        exit;
+
+	}
+}
 
 
 if(isset($_POST['NN'], $_POST['TN'], $_POST['E'], $_POST['VN'], $_POST['ANF'], $_POST['GD'], $_POST['T'])) {
@@ -40,7 +49,6 @@ if(isset($_POST['NN'], $_POST['TN'], $_POST['E'], $_POST['VN'], $_POST['ANF'], $
 $selecteddatum = $_GET['datum'] ?? '';
 $selectedtermin = $_GET['termin'] ?? '';
 $terminende= date('H:i:s', strtotime($selectedtermin) + 30 * 60);
-
 
 ?>
 
@@ -91,5 +99,10 @@ $terminende= date('H:i:s', strtotime($selectedtermin) + 30 * 60);
 			</fieldset>
 			<input type="submit" value="Termin buchen">
 		</form>
+        <h1>Zurück zur Indexseite</h1>
+		<form method="post">
+			<input type="submit" value="Indexseite" name="btnLogout">
+		</form>
+
 	</body>
 </html>
