@@ -55,12 +55,40 @@ function pruefeTermin($conn, string $datum, string $anfang_zeit): string
     return $anfang_zeit;
 }
 
-$jahr = 2026;
-$monat = 3;
+$heute = new DateTime();
+$startGrenze = new DateTime($heute->format('Y-m-01'));   // aktuális hónap első napja
+$endGrenze = (clone $startGrenze)->modify('+4 months');  // 3 hónappal később
+
+$jahr = isset($_GET['jahr']) ? (int)$_GET['jahr'] : (int)$heute->format('Y');
+$monat = isset($_GET['monat']) ? (int)$_GET['monat'] : (int)$heute->format('m');
+
+$angezeigterMonat = DateTime::createFromFormat('Y-n-j', "$jahr-$monat-1");
+
+if (!$angezeigterMonat) {
+    $angezeigterMonat = clone $startGrenze;
+}
+
+if ($angezeigterMonat < $startGrenze) {
+    $angezeigterMonat = clone $startGrenze;
+}
+
+if ($angezeigterMonat > $endGrenze) {
+    $angezeigterMonat = clone $endGrenze;
+}
+
+$jahr = (int)$angezeigterMonat->format('Y');
+$monat = (int)$angezeigterMonat->format('n');
+
 
 $ersteTag = mktime(0, 0, 0, $monat, 1, $jahr);
 $nummerdesTages = date('t', $ersteTag);
 $ersteTaginWoche = date('N', $ersteTag);
+
+$vorherigerMonat = (clone $angezeigterMonat)->modify('-1 month');
+$naechsterMonat = (clone $angezeigterMonat)->modify('+1 month');
+
+$vorherigErlaubt = $vorherigerMonat >= $startGrenze;
+$naechstErlaubt = $naechsterMonat <= $endGrenze;
 
 // ausgewähltes Datum aus der URL abrufen, wenn vorhanden
 $selecteddatum = $_GET['datum'] ?? '';  
@@ -105,6 +133,28 @@ if ($dt !== null && isset(ORDINATION_ZEITEN[$dt->format('N')])) {
             Wir freuen uns darauf, Sie bald bei uns begrüßen zu dürfen!</p>
         <div class="calender">   
         <h2 >Kalender</h2>
+                <div>
+                    <strong><?php echo $angezeigterMonat->format('Y-m'); ?></strong>
+                </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div>
+                    <?php if ($vorherigErlaubt): ?>
+                        <a href="?jahr=<?php echo $vorherigerMonat->format('Y'); ?>&monat=<?php echo $vorherigerMonat->format('n'); ?>">
+                            &laquo; Vorheriges Monat
+                        </a>
+                    <?php endif; ?>
+                </div>
+
+                <div>
+                    <?php if ($naechstErlaubt): ?>
+                        <a href="?jahr=<?php echo $naechsterMonat->format('Y'); ?>&monat=<?php echo $naechsterMonat->format('n'); ?>">
+                            Nachste Monat &raquo;
+                        </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+
             <table border="3" cellpadding="5" cellspacing="0">
                 <tr>
                     <th>H</th><th>K</th><th>Sze</th><th>Cs</th><th>P</th><th>Szo</th><th>V</th>
@@ -122,13 +172,17 @@ if ($dt !== null && isset(ORDINATION_ZEITEN[$dt->format('N')])) {
                     for ($tag = 1; $tag <= $nummerdesTages; $tag++, $siebenTag++) { 
                         $datum = sprintf('%04d-%02d-%02d', $jahr, $monat, $tag);
                         $wochentag = date('N', strtotime($datum));
+                        $aktualDate = date('Y-m-d');
+                        $maxBuchbar = (new DateTime())->modify('+3 months')->format('Y-m-d');
 
                         if ($wochentag >= 6) { 
                             echo "<td style='color: gray;'>$tag</td>";
-                        } else {
-                            echo "<td><a href='?datum=" . urlencode($datum) . "'>$tag</a></td>";
                         }
-
+                        elseif ($datum < $aktualDate || $datum > $maxBuchbar) {
+                            echo "<td style='color: gray;'>$tag</td>";
+                        } else {
+                            echo "<td><a href='?jahr=" . $jahr . "&monat=" . $monat . "&datum=" . urlencode($datum) . "'>$tag</a></td>";
+                        }
 
                         // Es überprüft, ob die Anzahl der Tage seit dem letzten Zeilenumbruch durch 7 teilbar ist. 
                         // Wenn ja, wird eine neue Zeile gestartet. 
@@ -167,7 +221,7 @@ if ($dt !== null && isset(ORDINATION_ZEITEN[$dt->format('N')])) {
                                 }
                 }
             }
-
+            
             ?>
         <h2>Adminbereich</h2>
             <p>Um die Admin-Seite zu betreten, klicken Sie bitte auf den folgenden Link:</p>
