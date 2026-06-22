@@ -14,7 +14,6 @@ if (empty($_SESSION["eingeloggt"])) {
     exit;
 }
 
-
 if (count($_POST) > 0) {
 	if (isset($_POST["btnLogout"])) {
 		
@@ -40,7 +39,6 @@ if (count($_POST) > 0) {
 
 	}
 }
-
 
 function zweiWochenDaten(string $startdatum): array {
     $daten = [];
@@ -117,7 +115,7 @@ foreach($alledate as $datum) {
 
 <h1>Logout Button</h1>
     <form method="post">
-		<input type="submit" value="ausloggen" name="btnLogout">
+		<input type="submit" value="Ausloggen" name="btnLogout">
 	</form>
 
 </body>

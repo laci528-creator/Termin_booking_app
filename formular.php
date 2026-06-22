@@ -18,7 +18,6 @@ if (count($_POST) > 0) {
 	}
 }
 
-
 if(isset($_POST['NN'], $_POST['TN'], $_POST['E'], $_POST['VN'], $_POST['ANF'], $_POST['GD'], $_POST['T'])) {
     // prüfen, ob die Werte leer sind; wenn ja, Fehlermeldung zurückgeben; wenn nein, in die Datenbank einfügen
     $nachname = pruefeAufLeer($_POST['NN']);

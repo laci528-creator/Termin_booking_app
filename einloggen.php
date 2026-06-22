@@ -1,22 +1,12 @@
 
 <?php
-
 require("includes/config.inc.php");
 require("includes/common.inc.php");
+require("includes/db.inc.php");
 
 //ta($_POST);
 session_start();
 $msg = '';
-
-if (count($_POST) > 0) {
-	if (isset($_POST["btnLogout"])) {
-		
-		$_SESSION = [];
-        header("Location: index.php");  
-        exit;
-
-	}
-}
 
 if (!empty($_SESSION["eingeloggt"])) {
     header("Location: admin.php");
@@ -25,28 +15,45 @@ if (!empty($_SESSION["eingeloggt"])) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	
-	$email_korrekt = "drjackbauer@beispielklinik.at";
-	$pwd_korrekt = "test12345678";
-	$datum = $_POST["D"] ?? '';
+		$conn = dbConnect();
+		$email = trim($_POST["E"] ?? '');
+		$pwd = trim($_POST["P"] ?? '');
+		$datum = $_POST["D"] ?? '';
 
-	if ($datum === '') {
-    $msg = '<p class="error">Bitte wählen Sie ein Startdatum aus.</p>';
-	}
-	
-	elseif (trim($_POST["E"]) == $email_korrekt && trim($_POST["P"]) == $pwd_korrekt) {
-		
-        $_SESSION["eingeloggt"] = true;
-        $_SESSION["date"] = $datum;
+		if (empty($email) || empty($pwd) || empty($datum)) {
+			$msg = '<p class="error">Bitte füllen Sie alle Felder aus.</p>';
+		} else {
+			$sql = "SELECT * FROM admin_users WHERE email = ? LIMIT 1";
+			$stmt = $conn->prepare($sql);
+			$stmt->bind_param("s", $email);
+			$stmt->execute();
+			$result = $stmt->get_result();
 
-        header("Location: admin.php");
-        exit;
-	}
-	else {
-		//die eingegebenen Daten waren nicht korrekt --> Fehlermeldung an den User; beachte: sagen Sie dem User NIE, WAS nicht korrekt war
-		$msg = '<p class="error">Leider waren die eingegebenen Daten nicht korrekt. Bitte versuchen Sie es erneut.</p>';
+				if ($result->num_rows === 1) {
+					$user = $result->fetch_assoc();
+
+					if (password_verify($pwd, $user['password_hash'])) {
+					$_SESSION["eingeloggt"] = true;
+					$_SESSION["date"] = $datum;
+					$_SESSION["admin_email"] = $user['email'];
+					$_SESSION["admin_id"] = $user['id'];
+					$_SESSION["admin_name"] = $user['name'];
+
+					$stmt->close();
+					$conn->close();
+
+					header("Location: admin.php");
+					exit;
+				} else {
+					$msg = '<p class="error">Leider waren die eingegebenen Daten nicht korrekt. Bitte versuchen Sie es erneut.</p>';	
+				}
+		} else {
+			$msg = '<p class="error">Leider waren die eingegebenen Daten nicht korrekt. Bitte versuchen Sie es erneut.</p>';
+		}
+		$stmt->close();
+		$conn->close();
 	}
 }
-
 ?>
 <!doctype html>
 <html lang="de">
@@ -72,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 Startdatum für die nächsten zwei Wochen:
                 <input type="date" name="D" required>
 			</label>
-			<input type="submit" value="einloggen">
+			<input type="submit" value="Einloggen">
 		</form>
 
         <h3>Hinweise zur Anmeldung</h3>
@@ -83,10 +90,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </ul>
                 <p>Geben Sie diese Anmeldedaten in das Formular ein, um sich erfolgreich einzuloggen und Zugriff auf die geschützte Admin-Seite zu erhalten.</p>
 
-				<h1>Zurück zur Indexseite</h1>
-		<form method="post">
-			<input type="submit" value="Indexseite" name="btnLogout">
-		</form>
-
+		<h1>Zurück zur Indexseite</h1>
+			<p>Wenn Sie zur Startseite zurückkehren möchten, klicken Sie bitte auf den folgenden Link:</p>
+				<a href="index.php" class="button">Zurück zur Indexseite</a>
 	</body>
 </html>
