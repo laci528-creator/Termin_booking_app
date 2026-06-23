@@ -54,6 +54,9 @@ function pruefeTermin($conn, string $datum, string $anfang_zeit): string
 
     return $anfang_zeit;
 }
+if (isset($_GET['success']) && $_GET['success'] == 1) {
+    echo "<p>Termin erfolgreich gebucht!</p>";
+}
 
 $heute = new DateTime();
 $startGrenze = new DateTime($heute->format('Y-m-01'));   // aktuális hónap első napja

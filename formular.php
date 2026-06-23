@@ -4,51 +4,88 @@ require("includes/config.inc.php");
 require("includes/common.inc.php");
 require("includes/db.inc.php");
 
+function pruefeTermin($conn, string $datum, string $anfang_zeit): bool    
+{
+    $sql = "
+        SELECT id
+        FROM gespeicherte_termin
+        WHERE datum = ?
+          AND anfang_zeit = ?
+        LIMIT 1
+    ";
+    $stmt = $conn->prepare($sql);
+
+	if (!$stmt) {
+    die("SQL Fehler bei Terminprüfung: " . $conn->error);
+	}
+
+    $stmt->bind_param("ss", $datum, $anfang_zeit);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $istGebucht = $result->num_rows > 0;
+	
+    $stmt->close();
+
+    return $istGebucht;
+}
 
 $conn = dbConnect();
 
-
-if (count($_POST) > 0) {
-	if (isset($_POST["btnLogout"])) {
-		
-		$_SESSION = [];
-        header("Location: index.php");  
-        exit;
-
-	}
-}
-
-if(isset($_POST['NN'], $_POST['TN'], $_POST['E'], $_POST['VN'], $_POST['ANF'], $_POST['GD'], $_POST['T'])) {
-    // prüfen, ob die Werte leer sind; wenn ja, Fehlermeldung zurückgeben; wenn nein, in die Datenbank einfügen
-    $nachname = pruefeAufLeer($_POST['NN']);
-    $telefon = pruefeAufLeer($_POST['TN']);
-    $email = pruefeAufLeer($_POST['E']);
-    $datum = pruefeAufLeer($_POST['VN']);
-    $anfang_zeit = pruefeAufLeer($_POST['ANF']);
-    $ende_zeit = pruefeAufLeer($_POST['GD']);
-    $bemerkung = pruefeAufLeer($_POST['T']);
-
-    $sql_kunden = "INSERT INTO kunden (name, telefon, email) VALUES ($nachname, $telefon, $email)";
-    
-    if (dbQuery($conn, $sql_kunden)) {
-        $kunden_id = $conn->insert_id; // Letzte eingefügte ID abrufen
-        $sql_termin = "INSERT INTO gespeicherte_termin (kunden_id, datum, anfang_zeit, ende_zeit, bemerkung) 
-                        VALUES ($kunden_id, $datum, $anfang_zeit, $ende_zeit, $bemerkung)";
-        
-        if (dbQuery($conn, $sql_termin)) {
-            echo "Termin erfolgreich gebucht!";
-        } else {
-            echo "Fehler beim Buchen des Termins.";
-        }
-    } else {
-        echo "Fehler beim Speichern der Kundendaten.";
-    }
-}
-
+// daten von die index.php bekommen
 $selecteddatum = $_GET['datum'] ?? '';
 $selectedtermin = $_GET['termin'] ?? '';
 $terminende= date('H:i:s', strtotime($selectedtermin) + 30 * 60);
 
+$msg = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// prüfen, ob die Werte leer sind; wenn ja, Fehlermeldung zurückgeben; wenn nein, in die Datenbank einfügen
+	if(!empty($_POST['NN']) && !empty($_POST['TN']) && !empty($_POST['E']) && !empty($_POST['VN']) && !empty($_POST['ANF']) && !empty($_POST['GD'])) {
+			$nachname = trim($_POST['NN']);
+			$telefon = trim($_POST['TN']);
+			$email = trim($_POST['E']);
+			$datum = trim($_POST['VN']);
+			$anfang_zeit = trim($_POST['ANF']);
+			$ende_zeit = trim($_POST['GD']);
+			$bemerkung = trim($_POST['T']);
+
+			$terminStatus = pruefeTermin($conn, $datum, $anfang_zeit);
+			if ($terminStatus === true) {
+				$msg = "Der ausgewählte Termin ist bereits gebucht. Bitte wählen Sie einen anderen Termin.";
+			} else {
+
+				$sql_kunden = "INSERT INTO kunden (name, telefon, email) VALUES (?, ?, ?)";
+				$stmt = $conn->prepare($sql_kunden);
+				$stmt->bind_param("sss", $nachname, $telefon, $email);
+				$stmt->execute();
+
+				if ($stmt->affected_rows > 0) {
+					$kunden_id = $conn->insert_id; // Letzte eingefügte ID abrufen
+					$stmt->close();
+					$sql_termin = "INSERT INTO gespeicherte_termin (kunden_id, datum, anfang_zeit, ende_zeit, bemerkung) 
+											VALUES (?, ?, ?, ?, ?)";
+					$stmt = $conn->prepare($sql_termin);
+					$stmt->bind_param("issss", $kunden_id, $datum, $anfang_zeit, $ende_zeit, $bemerkung);
+					$stmt->execute();
+					if ($stmt->affected_rows > 0) {
+						$stmt->close();
+						header("Location: index.php?success=1");
+						exit;
+					} else {
+						$msg = "Fehler beim Buchen des Termins.";
+						$stmt->close();
+					}
+				} else {
+					$msg = "Fehler beim Speichern der Kundendaten.";
+					$stmt->close();
+				}
+			}
+
+		} else {
+			$msg = "Bitte füllen Sie alle erforderlichen Felder aus.";
+	}	
+
+}
 ?>
 
 <!doctype html>
@@ -60,6 +97,7 @@ $terminende= date('H:i:s', strtotime($selectedtermin) + 30 * 60);
 	</head>
 	<body>
         <h1>Terminbuchung</h1>
+		<?php echo $msg; // Fehlermeldung anzeigen, falls vorhanden ?>
         <h2>Formular</h2>
 		<form method="post">
 			<fieldset>
@@ -99,9 +137,6 @@ $terminende= date('H:i:s', strtotime($selectedtermin) + 30 * 60);
 			<input type="submit" value="Termin buchen">
 		</form>
         <h1>Zurück zur Indexseite</h1>
-		<form method="post">
-			<input type="submit" value="Indexseite" name="btnLogout">
-		</form>
-
+		<a href="index.php" class="button">Zurück zur Indexseite</a>
 	</body>
 </html>
