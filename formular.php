@@ -4,8 +4,9 @@ require("includes/config.inc.php");
 require("includes/common.inc.php");
 require("includes/db.inc.php");
 
-function pruefeTermin($conn, string $datum, string $anfang_zeit): bool    
-{
+session_start();
+
+function pruefeTermin($conn, string $datum, string $anfang_zeit): bool {
     $sql = "
         SELECT id
         FROM gespeicherte_termin
@@ -18,7 +19,6 @@ function pruefeTermin($conn, string $datum, string $anfang_zeit): bool
 	if (!$stmt) {
     die("SQL Fehler bei Terminprüfung: " . $conn->error);
 	}
-
     $stmt->bind_param("ss", $datum, $anfang_zeit);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -31,61 +31,67 @@ function pruefeTermin($conn, string $datum, string $anfang_zeit): bool
 
 $conn = dbConnect();
 
-// daten von die index.php bekommen
-$selecteddatum = $_GET['datum'] ?? '';
-$selectedtermin = $_GET['termin'] ?? '';
-$terminende= date('H:i:s', strtotime($selectedtermin) + 30 * 60);
+// daten von der index.php übernehmen, die der Benutzer ausgewählt hat	
+$selecteddatum = $_SESSION['selecteddatum'] ?? '';
+$selectedtermin = $_SESSION['selectedtermin'] ?? '';
+$terminende= date('H:i:s', strtotime($selectedtermin) + 30 * 60) ?? ''; // 30 Minuten hinzufügen, um die Endzeit zu berechnen
 
 $msg = '';
 
+	$nachname = trim($_POST['NN'] ?? '');
+	$telefon = trim($_POST['TN'] ?? '');
+	$email = trim($_POST['E'] ?? '');
+	$datum = trim($_POST['VN'] ?? '');
+	$anfang_zeit = trim($_POST['ANF'] ?? '');
+	$ende_zeit = trim($_POST['GD'] ?? '');
+	$bemerkung = trim($_POST['T'] ?? '');
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // prüfen, ob die Werte leer sind; wenn ja, Fehlermeldung zurückgeben; wenn nein, in die Datenbank einfügen
-	if(!empty($_POST['NN']) && !empty($_POST['TN']) && !empty($_POST['E']) && !empty($_POST['VN']) && !empty($_POST['ANF']) && !empty($_POST['GD'])) {
-			$nachname = trim($_POST['NN']);
-			$telefon = trim($_POST['TN']);
-			$email = trim($_POST['E']);
-			$datum = trim($_POST['VN']);
-			$anfang_zeit = trim($_POST['ANF']);
-			$ende_zeit = trim($_POST['GD']);
-			$bemerkung = trim($_POST['T']);
+	if(!empty($nachname) && !empty($telefon) && !empty($email) && !empty($datum) && !empty($anfang_zeit) && !empty($ende_zeit)) {
+		$terminStatus = pruefeTermin($conn, $datum, $anfang_zeit);
 
-			$terminStatus = pruefeTermin($conn, $datum, $anfang_zeit);
-			if ($terminStatus === true) {
-				$msg = "Der ausgewählte Termin ist bereits gebucht. Bitte wählen Sie einen anderen Termin.";
-			} else {
+		if ($terminStatus === false) {
 
-				$sql_kunden = "INSERT INTO kunden (name, telefon, email) VALUES (?, ?, ?)";
-				$stmt = $conn->prepare($sql_kunden);
-				$stmt->bind_param("sss", $nachname, $telefon, $email);
+			$sql_kunden = "INSERT INTO kunden (name, telefon, email) VALUES (?, ?, ?)";
+			$stmt = $conn->prepare($sql_kunden);
+			$stmt->bind_param("sss", $nachname, $telefon, $email);
+			$stmt->execute();
+
+			if ($stmt->affected_rows > 0) {
+				$kunden_id = $conn->insert_id; // Letzte eingefügte ID abrufen
+				$stmt->close();
+				$sql_termin = "INSERT INTO gespeicherte_termin (kunden_id, datum, anfang_zeit, ende_zeit, bemerkung) 
+								VALUES (?, ?, ?, ?, ?)";
+				$stmt = $conn->prepare($sql_termin);
+				$stmt->bind_param("issss", $kunden_id, $datum, $anfang_zeit, $ende_zeit, $bemerkung);
 				$stmt->execute();
 
 				if ($stmt->affected_rows > 0) {
-					$kunden_id = $conn->insert_id; // Letzte eingefügte ID abrufen
 					$stmt->close();
-					$sql_termin = "INSERT INTO gespeicherte_termin (kunden_id, datum, anfang_zeit, ende_zeit, bemerkung) 
-											VALUES (?, ?, ?, ?, ?)";
-					$stmt = $conn->prepare($sql_termin);
-					$stmt->bind_param("issss", $kunden_id, $datum, $anfang_zeit, $ende_zeit, $bemerkung);
-					$stmt->execute();
-					if ($stmt->affected_rows > 0) {
+					unset($_SESSION['selecteddatum'], $_SESSION['selectedtermin']); // Session-Variablen zurücksetzen
+					header("Location: index.php?success=1");
+					exit;
+				} 
+				else {
+						$msg = '<p class="error">Fehler beim Buchen des Termins.</p>';
 						$stmt->close();
-						header("Location: index.php?success=1");
-						exit;
-					} else {
-						$msg = "Fehler beim Buchen des Termins.";
-						$stmt->close();
-					}
-				} else {
-					$msg = "Fehler beim Speichern der Kundendaten.";
-					$stmt->close();
 				}
+			} 
+			else {
+				$msg = '<p class="error">Fehler beim Speichern der Kundendaten.</p>';
+				$stmt->close();
 			}
-
-		} else {
-			$msg = "Bitte füllen Sie alle erforderlichen Felder aus.";
+		}
+		else {
+			$msg = '<p class="error">Der ausgewählte Termin ist bereits gebucht. Bitte wählen Sie einen anderen Termin.</p>';
+		}
+	} 
+	else {
+			$msg = '<p class="error">Bitte füllen Sie alle erforderlichen Felder aus.</p>';
 	}	
-
 }
+$conn->close();
 ?>
 
 <!doctype html>
@@ -126,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 					<input type="text" name="ANF" value="<?php echo htmlspecialchars($selectedtermin); ?>" readonly>
 				</label>
 				<label>
-					endezeit:
+					Endzeit:
 					<input type="text" name="GD" value="<?php echo htmlspecialchars($terminende); ?>" readonly>
 				</label>
                 <label>

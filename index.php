@@ -4,7 +4,7 @@ require("includes/config.inc.php");
 require("includes/common.inc.php");
 require("includes/db.inc.php");
 
-
+session_start();
 $conn = dbConnect();
 
 /**
@@ -33,34 +33,46 @@ function termingenerator(string $anfang_zeit, string $ende_zeit, int $intervall)
 
     return $termine;
 }
-
 // anfrage mysql, ob der Termin schon gebucht ist oder nicht; 
-function pruefeTermin($conn, string $datum, string $anfang_zeit): string    
-{
+
+function pruefeTermin($conn, string $datum, string $anfang_zeit): string {
     $sql = "
         SELECT anfang_zeit
         FROM gespeicherte_termin
-        WHERE datum = '$datum'
-          AND anfang_zeit = '$anfang_zeit'
+        WHERE datum = ?
+          AND anfang_zeit = ?
         LIMIT 1
     ";
+    $stmt = $conn->prepare($sql);
 
-    $result = dbQuery($conn, $sql);
-    $row = dbFetch($result);
+	if (!$stmt) {
+    die("SQL Fehler bei Terminprüfung: " . $conn->error);
+	}
+    $stmt->bind_param("ss", $datum, $anfang_zeit);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+	
+    $stmt->close();
 
-    if ($row) {
-        return 'Nicht buchbar';
-    }
+    return $row ? 'Nicht buchbar' : $anfang_zeit;
 
-    return $anfang_zeit;
 }
+if (isset($_GET['book_datum'], $_GET['book_termin'])) {
+    $_SESSION['selecteddatum'] = $_GET['book_datum'];
+    $_SESSION['selectedtermin'] = $_GET['book_termin'];
+
+    header("Location: formular.php");
+    exit;
+}
+
 if (isset($_GET['success']) && $_GET['success'] == 1) {
-    echo "<p>Termin erfolgreich gebucht!</p>";
+    $success_msg = '<p class="success">Termin erfolgreich gebucht!</p>';
 }
 
 $heute = new DateTime();
 $startGrenze = new DateTime($heute->format('Y-m-01'));   // aktuális hónap első napja
-$endGrenze = (clone $startGrenze)->modify('+4 months');  // 3 hónappal később
+$endGrenze = (clone $startGrenze)->modify('+3 months');  // 3 hónappal később
 
 $jahr = isset($_GET['jahr']) ? (int)$_GET['jahr'] : (int)$heute->format('Y');
 $monat = isset($_GET['monat']) ? (int)$_GET['monat'] : (int)$heute->format('m');
@@ -114,23 +126,21 @@ const ORDINATION_ZEITEN = [
 if ($dt !== null && isset(ORDINATION_ZEITEN[$dt->format('N')])) {   
     $anfang_zeit = ORDINATION_ZEITEN[$dt->format('N')][0];
     $ende_zeit = ORDINATION_ZEITEN[$dt->format('N')][1];
-
-    //echo "Anfang: $anfang_zeit, Ende: $ende_zeit" . "<br>";
-} elseif ($selecteddatum !== '') { 
-    echo "An diesem Tag gibt es keine Ordination.";
 }
 
-?>
 
+?>
 <!doctype html>
 <html lang="de">
 	<head>
 		<title>Terminvereinbarung</title>
 		<meta charset="utf-8">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/dark.css">
+        <link rel="stylesheet" href="css/common.css">
 	</head>
 	<body>
         <h1>Terminvereinbarung</h1>
+        <?php if (isset($success_msg)) echo $success_msg; ?>
         <p>Willkommen auf unserer Terminvereinbarungsseite! Hier können Sie ganz einfach einen Termin für Ihre nächste Konsultation oder Behandlung vereinbaren. 
             Bitte wählen Sie ein Datum aus dem Kalender aus, um die verfügbaren Termine an diesem Tag zu sehen. Klicken Sie dann auf einen freien Termin, um Ihre Buchung abzuschließen. 
             Wir freuen uns darauf, Sie bald bei uns begrüßen zu dürfen!</p>
@@ -147,7 +157,6 @@ if ($dt !== null && isset(ORDINATION_ZEITEN[$dt->format('N')])) {
                         </a>
                     <?php endif; ?>
                 </div>
-
                 <div>
                     <?php if ($naechstErlaubt): ?>
                         <a href="?jahr=<?php echo $naechsterMonat->format('Y'); ?>&monat=<?php echo $naechsterMonat->format('n'); ?>">
@@ -156,8 +165,6 @@ if ($dt !== null && isset(ORDINATION_ZEITEN[$dt->format('N')])) {
                     <?php endif; ?>
                 </div>
             </div>
-
-
             <table border="3" cellpadding="5" cellspacing="0">
                 <tr>
                     <th>H</th><th>K</th><th>Sze</th><th>Cs</th><th>P</th><th>Szo</th><th>V</th>
@@ -197,43 +204,37 @@ if ($dt !== null && isset(ORDINATION_ZEITEN[$dt->format('N')])) {
                 </tr>
             </table>
             </div>
-
             <h2>Freie Termine am <?php echo htmlspecialchars($selecteddatum); ?></h2>
             <?php
             
             // Überprüft, ob die Variablen $anfang_zeit und $ende_zeit gesetzt sind. 
             if ($selecteddatum === '') {
-                echo "Bitte wählen Sie ein Datum aus dem Kalender aus, um die verfügbaren Termine an diesem Tag zu sehen.";
-            } elseif (!isset($anfang_zeit) || !isset($ende_zeit)) {  
-                echo "Keine Termine verfügbar.";
-            } else {
-
-            $alles = termingenerator($selecteddatum . " " . $anfang_zeit, $selecteddatum . " " . $ende_zeit, 30);
+                echo "<p>Bitte wählen Sie ein Datum aus dem Kalender aus, um die verfügbaren Termine an diesem Tag zu sehen.</p>";
+            } elseif (!isset($anfang_zeit) || !isset($ende_zeit)) {
+                echo "<p>Bitte wählen Sie einen Anfangs- und Endzeitpunkt aus, um die verfügbaren Termine an diesem Tag zu sehen.</p>";
+            }
+            else {
+                $alles = termingenerator($selecteddatum . " " . $anfang_zeit, $selecteddatum . " " . $ende_zeit, 30);
 
                 // Prüft für jeden Termin, ob er bereits gebucht ist.
                 // Freie Termine werden als Link zum Buchungsformular angezeigt.
                 foreach ($alles as $termin) {   
-                        $status = pruefeTermin($conn, $selecteddatum, $termin);
+                    $status = pruefeTermin($conn, $selecteddatum, $termin);
 
-                                if ($status === 'Nicht buchbar') {
+                    if ($status === 'Nicht buchbar') {
                                     echo htmlspecialchars($status) . "<br>";
-                                } else {
-                                    echo "<a href='formular.php?datum=" . urlencode($selecteddatum) . "&termin=" . urlencode($termin) . "'>"
+                    } 
+                    else {
+                        echo "<a href='?jahr=" . urlencode($jahr) . "&monat=" . urlencode($monat) . "&datum=" . urlencode($selecteddatum) . "&book_datum=" . urlencode($selecteddatum) . "&book_termin=" . urlencode($termin) . "'>"
                                         . htmlspecialchars($status)
                                         . "</a><br>";
-                                }
+                    }
                 }
             }
-            
             ?>
         <h2>Adminbereich</h2>
             <p>Um die Admin-Seite zu betreten, klicken Sie bitte auf den folgenden Link:</p>
                 <a href="einloggen.php">Admin-Seite betreten</a>
     </body>    
 </html>
-
-
-
-
-
-
+<?php $conn->close(); ?>
