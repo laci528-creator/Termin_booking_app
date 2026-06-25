@@ -19,3 +19,18 @@
 	border-left:3px solid red;
 	font-weight:bold;
 }
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    min-width: 1000px;
+    border-collapse: collapse;
+}
+
+td input {
+    width: 100%;
+    box-sizing: border-box;
+}

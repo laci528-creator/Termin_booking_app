@@ -66,6 +66,21 @@ if (isset($_GET['book_datum'], $_GET['book_termin'])) {
     exit;
 }
 
+$monate_deutsch = [
+    1 => 'Januar',
+    2 => 'Februar',
+    3 => 'März',
+    4 => 'April',
+    5 => 'Mai',
+    6 => 'Juni',
+    7 => 'Juli',
+    8 => 'August',
+    9 => 'September',
+    10 => 'Oktober',
+    11 => 'November',
+    12 => 'Dezember'
+];
+
 if (isset($_GET['success']) && $_GET['success'] == 1) {
     $success_msg = '<p class="success">Termin erfolgreich gebucht!</p>';
 }
@@ -147,7 +162,7 @@ if ($dt !== null && isset(ORDINATION_ZEITEN[$dt->format('N')])) {
         <div class="calender">   
         <h2 >Kalender</h2>
                 <div>
-                    <strong><?php echo $angezeigterMonat->format('Y-m'); ?></strong>
+                    <strong><?php echo $monate_deutsch[$angezeigterMonat->format('n')] . ' ' . $angezeigterMonat->format('Y'); ?></strong>
                 </div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <div>
@@ -179,11 +194,11 @@ if ($dt !== null && isset(ORDINATION_ZEITEN[$dt->format('N')])) {
                     $siebenTag = $ersteTaginWoche;
 
                     // Erstellt für jeden Tag des Monats eine Zelle mit einem Datumslink.
+                    $aktualDate = date('Y-m-d');
+                    $maxBuchbar = (new DateTime())->modify('+3 months')->format('Y-m-d');
                     for ($tag = 1; $tag <= $nummerdesTages; $tag++, $siebenTag++) { 
                         $datum = sprintf('%04d-%02d-%02d', $jahr, $monat, $tag);
                         $wochentag = date('N', strtotime($datum));
-                        $aktualDate = date('Y-m-d');
-                        $maxBuchbar = (new DateTime())->modify('+3 months')->format('Y-m-d');
 
                         if ($wochentag >= 6) { 
                             echo "<td style='color: gray;'>$tag</td>";
@@ -211,7 +226,7 @@ if ($dt !== null && isset(ORDINATION_ZEITEN[$dt->format('N')])) {
             if ($selecteddatum === '') {
                 echo "<p>Bitte wählen Sie ein Datum aus dem Kalender aus, um die verfügbaren Termine an diesem Tag zu sehen.</p>";
             } elseif (!isset($anfang_zeit) || !isset($ende_zeit)) {
-                echo "<p>Bitte wählen Sie einen Anfangs- und Endzeitpunkt aus, um die verfügbaren Termine an diesem Tag zu sehen.</p>";
+                echo "<p>Für dieses Datum sind keine Termine verfügbar.</p>";            
             }
             else {
                 $alles = termingenerator($selecteddatum . " " . $anfang_zeit, $selecteddatum . " " . $ende_zeit, 30);
