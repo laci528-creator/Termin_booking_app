@@ -9,60 +9,74 @@ session_start();
 
 $conn = dbConnect();
 
+
 // daten von der index.php übernehmen, die der Benutzer ausgewählt hat	
 $selecteddatum = $_SESSION['selecteddatum'] ?? '';
 $selectedtermin = $_SESSION['selectedtermin'] ?? '';
-$terminende= date('H:i:s', strtotime($selectedtermin) + 30 * 60) ?? ''; // 30 Minuten hinzufügen, um die Endzeit zu berechnen
+
+$terminende = '';
+
+if (!empty($selectedtermin)) {
+    $terminende = date('H:i:s', strtotime($selectedtermin) + 30 * 60);
+} // 30 Minuten hinzufügen, um die Endzeit zu berechnen
 
 $msg = '';
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$nachname = trim($_POST['NN'] ?? '');
 	$telefon = trim($_POST['TN'] ?? '');
 	$email = trim($_POST['E'] ?? '');
-	$datum = trim($_POST['VN'] ?? '');
-	$anfang_zeit = trim($_POST['ANF'] ?? '');
-	$ende_zeit = trim($_POST['GD'] ?? '');
 	$bemerkung = trim($_POST['T'] ?? '');
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+	$datum = $selecteddatum;
+	$anfang_zeit = $selectedtermin;
+	$ende_zeit = $terminende;
+	
 // prüfen, ob die Werte leer sind; wenn ja, Fehlermeldung zurückgeben; wenn nein, in die Datenbank einfügen
 	if(!empty($nachname) && !empty($telefon) && !empty($email) && !empty($datum) && !empty($anfang_zeit) && !empty($ende_zeit)) {
-		$istGebucht = pruefeTermin($conn, $datum, $anfang_zeit);
+		if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+		
+			$fehler = validiereTermin($datum, $anfang_zeit, $ende_zeit);
+			if ($fehler !== null) {
+				$msg = '<p class="error">' . htmlspecialchars($fehler) . '</p>';
+			}
+			elseif (!pruefeTermin($conn, $datum, $anfang_zeit)) {
 
-		if ($istGebucht === false) {
-
-			$sql_kunden = "INSERT INTO kunden (name, telefon, email) VALUES (?, ?, ?)";
-			$stmt = $conn->prepare($sql_kunden);
-			$stmt->bind_param("sss", $nachname, $telefon, $email);
-			$stmt->execute();
-
-			if ($stmt->affected_rows > 0) {
-				$kunden_id = $conn->insert_id; // Letzte eingefügte ID abrufen
-				$stmt->close();
-				$sql_termin = "INSERT INTO gespeicherte_termin (kunden_id, datum, anfang_zeit, ende_zeit, bemerkung) 
-								VALUES (?, ?, ?, ?, ?)";
-				$stmt = $conn->prepare($sql_termin);
-				$stmt->bind_param("issss", $kunden_id, $datum, $anfang_zeit, $ende_zeit, $bemerkung);
+				$sql_kunden = "INSERT INTO kunden (name, telefon, email) VALUES (?, ?, ?)";
+				$stmt = $conn->prepare($sql_kunden);
+				$stmt->bind_param("sss", $nachname, $telefon, $email);
 				$stmt->execute();
 
 				if ($stmt->affected_rows > 0) {
+					$kunden_id = $conn->insert_id; // Letzte eingefügte ID abrufen
 					$stmt->close();
-					unset($_SESSION['selecteddatum'], $_SESSION['selectedtermin']); // Session-Variablen zurücksetzen
-					header("Location: index.php?success=1");
-					exit;
+					$sql_termin = "INSERT INTO gespeicherte_termin (kunden_id, datum, anfang_zeit, ende_zeit, bemerkung) 
+									VALUES (?, ?, ?, ?, ?)";
+					$stmt = $conn->prepare($sql_termin);
+					$stmt->bind_param("issss", $kunden_id, $datum, $anfang_zeit, $ende_zeit, $bemerkung);
+					$stmt->execute();
+
+					if ($stmt->affected_rows > 0) {
+						$stmt->close();
+						unset($_SESSION['selecteddatum'], $_SESSION['selectedtermin']); // Session-Variablen zurücksetzen
+						header("Location: index.php?success=1");
+						exit;
+					} 
+					else {
+							$msg = '<p class="error">Fehler beim Buchen des Termins.</p>';
+							$stmt->close();
+					}
 				} 
 				else {
-						$msg = '<p class="error">Fehler beim Buchen des Termins.</p>';
-						$stmt->close();
+					$msg = '<p class="error">Fehler beim Speichern der Kundendaten.</p>';
+					$stmt->close();
 				}
-			} 
+			}
 			else {
-				$msg = '<p class="error">Fehler beim Speichern der Kundendaten.</p>';
-				$stmt->close();
+				$msg = '<p class="error">Der ausgewählte Termin ist bereits gebucht. Bitte wählen Sie einen anderen Termin.</p>';
 			}
 		}
 		else {
-			$msg = '<p class="error">Der ausgewählte Termin ist bereits gebucht. Bitte wählen Sie einen anderen Termin.</p>';
+			$msg = '<p class="error">Bitte geben Sie eine gültige E-Mail-Adresse ein.</p>';
 		}
 	} 
 	else {
