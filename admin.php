@@ -3,6 +3,7 @@
 require("includes/config.inc.php");
 require("includes/common.inc.php");
 require("includes/db.inc.php");
+require("includes/termin_functions.inc.php");
 
 
 $conn = dbConnect();
@@ -14,32 +15,10 @@ if (empty($_SESSION["eingeloggt"])) {
     exit;
 }
 
-if (count($_POST) > 0) {
-	if (isset($_POST["btnLogout"])) {
-		
-		$_SESSION = [];
-		
-		if(ini_get("session.use_cookies")) {
-			$params = session_get_cookie_params();
-			setcookie(
-				session_name(),
-				'',
-				time()-86400,
-				$params["path"],
-				$params["domain"],
-				$params["secure"],
-				$params["httponly"]
-
-			);
-		}
-		
-		session_destroy();
-        header("Location: einloggen.php");  
-        exit;
-
-	}
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
-
+/*
 function pruefeTermin($conn, string $datum, string $anfang_zeit, int $termin_id): bool {
     $sql = "
         SELECT id
@@ -62,8 +41,7 @@ function pruefeTermin($conn, string $datum, string $anfang_zeit, int $termin_id)
     $stmt->close();
 
     return $istGebucht;
-}
-
+}*/
 
 function zweiWochenDaten(string $startdatum): array {
     $daten = [];
@@ -76,23 +54,41 @@ function zweiWochenDaten(string $startdatum): array {
     return $daten;
 }
 
-if($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if (isset($_POST['delete'])) {
-            $termin_id = (int)$_POST['delete'];
-            $sql = "DELETE FROM gespeicherte_termin
-                    WHERE (
-                    id = '" . $conn->real_escape_string($termin_id) . "'
-                    )
-                    ";
+function logoutUser(): void {
+            $_SESSION = [];
+		
+		if(ini_get("session.use_cookies")) {
+			$params = session_get_cookie_params();
+			setcookie(
+				session_name(),
+				'',
+				time()-86400,
+				$params["path"],
+				$params["domain"],
+				$params["secure"],
+				$params["httponly"]
+
+			);
+		}
+		
+		session_destroy();
+        header("Location: einloggen.php");  
+        exit;
+}
+
+function deleteTermin($conn, int $termin_id): string {
+        $sql = "DELETE FROM gespeicherte_termin WHERE id = $termin_id ";
+
             $result = dbQuery($conn, $sql);
+
             if ($result) {
-                $msg = "<p class='success'>Termin erfolgreich gelöscht.</p>";
-            } else {
-                $msg = "<p class='error'>Fehler beim Löschen des Termins: " . $conn->error . "</p>";
+                return "<p class='success'>Termin erfolgreich gelöscht.</p>";
             }
-    }
-    elseif (isset($_POST['update'])) {
-        $termin_id = (int)$_POST['update'];
+
+        return "<p class='error'>Fehler beim Löschen des Termins: " . $conn->error . "</p>";
+}
+
+function updateTermin($conn, int $termin_id): string {
         $datum = $_POST['datum'][$termin_id] ?? '';
         $anfang_zeit = $_POST['anfang_zeit'][$termin_id] ?? '';
         $ende_zeit = $_POST['ende_zeit'][$termin_id] ?? '';
@@ -102,9 +98,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $terminStatus = pruefeTermin($conn, $datum, $anfang_zeit, $termin_id);
         if ($terminStatus === true) {
-            $msg = "<p class='error'>Der Termin ist bereits gebucht. Bitte wählen Sie einen anderen Termin.</p>";
-        } else {
-
+            return "<p class='error'>Der Termin ist bereits gebucht. Bitte wählen Sie einen anderen Termin.</p>";
+        }
         $sql = "UPDATE gespeicherte_termin
                 JOIN kunden ON gespeicherte_termin.kunden_id = kunden.id
                 SET gespeicherte_termin.datum = '" . $conn->real_escape_string($datum) . "',
@@ -117,13 +112,48 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $result = dbQuery($conn, $sql);
         if ($result) {
-            $msg = "<p class='success'>Termin erfolgreich aktualisiert.</p>";
-        } else {
-            $msg = "<p class='error'>Fehler beim Aktualisieren des Termins: " . $conn->error . "</p>";
+            return "<p class='success'>Termin erfolgreich aktualisiert.</p>";
         }
-    }
+        return "<p class='error'>Fehler beim Aktualisieren des Termins: " . $conn->error . "</p>";
 }
+
+if($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $form_type = $_POST["form_type"] ?? '';
+
+        if ($form_type === "logout") {
+            logoutUser();
+        }
+
+        elseif ($form_type === 'datum_andern') {
+            $datum = $_POST['datum_andern'] ?? '';
+
+            if ($datum !== '') {
+                $_SESSION["date"] = $datum;
+            }
+        }
+        elseif ($form_type === 'termin_bearbeiten') {
+            if (
+                empty($_POST['csrf_token']) ||
+                !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])
+            ) {
+                die("Ungültige Anfrage.");
+            }
+
+
+            if (isset($_POST['delete'])) {
+                $termin_id = (int)$_POST['delete'];
+                $msg = deleteTermin($conn, $termin_id);
+            
+            }
+            elseif (isset($_POST['update'])) {
+                $termin_id = (int)$_POST['update'];
+                $msg = updateTermin($conn, $termin_id);
+            }
+        }
 }
+
+$gefragtedatum = $_SESSION["date"] ?? '';
+$terminCount = 0;
 
 ?>
 <!doctype html>
@@ -134,48 +164,73 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/dark.css">
         <link rel="stylesheet" href="css/common.css">
         <style>
-
+            body {
+                max-width: 1400px;
+            }
             .table-wrapper {
-                width: 1400px;
+                width: 100%;
+                max-width: 100%;
                 overflow-x: auto;
             }
-
             table {
+                width: 100%;
                 min-width: 1100px;
                 border-collapse: collapse;
             }
-
             td input {
-                width: 100%;
+                width: 150px;
                 box-sizing: border-box;
+            }
+            td input[name^="name"] {
+                width: 195px;
+            }
+
+            td input[name^="email"] {
+                width: 210px;
+            }
+            th:nth-of-type(4) {
+                width: 200px;
+            }
+            th:nth-of-type(6) {
+                width: 215px;
+            }
+            th:nth-of-type(7), th:nth-of-type(8) {
+                width: 90px;
             }
 </style>
             
 	</head>
 	<body>
-<h1>Gebuchte Termine</h1>
+<h1>Gebuchte Termine <br> von <?php echo htmlspecialchars($gefragtedatum, ENT_QUOTES, 'UTF-8');?> und naechste zwei woche</h1>
+        <form method="post">
+            <input type="hidden" name="form_type" value="datum_andern">
+            <label>
+                Startdatum für abfrage:
+                <input type="date" name="datum_andern">
+			</label><br>
+			<button type="submit">Datum Andern</button>
+		</form>
 <?php echo $msg; ?>
 <form method="post">
+    <input type="hidden" name="form_type" value="termin_bearbeiten">
+    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES,'UTF-8'); ?>">
 <div class="table-wrapper">
-<table border="1" cellpadding="5" cellspacing="0">  
-    <tr>
-        <th>Datum</th>
-        <th>Anfangszeit</th>
-        <th>Endezeit</th>
-        <th>Name</th>
-        <th>Telefon</th>
-        <th>Email</th>
-        <th>Delete</th>
-        <th>Update</th>
-    </tr>   
+    <table border="1" cellpadding="5" cellspacing="0">  
+        <tr>
+            <th>Datum</th>
+            <th>Anfangszeit</th>
+            <th>Endezeit</th>
+            <th>Name</th>
+            <th>Telefon</th>
+            <th>Email</th>
+            <th>Delete</th>
+            <th>Update</th>
+        </tr>   
 <?php
-
-$gefragtedatum = $_SESSION["date"] ?? '';
 if ($gefragtedatum === '') {
-    echo "<p>Kein Startdatum in der Sitzung gefunden.</p>";
-    exit;
+    echo '<tr><td colspan="8" class="error">Kein Startdatum in der Sitzung gefunden.</td></tr>';
 }
-
+else {
 $alledate = zweiWochenDaten($gefragtedatum);
 
 
@@ -198,6 +253,8 @@ foreach($alledate as $datum) {
             $result = dbQuery($conn, $sql);
 
             while($data = dbFetch($result)) {
+                $terminCount++;
+
                 $id_termin = $data->id;
                 $id_kunden = $data->kunden_id;
                 echo "<tr>";
@@ -211,17 +268,24 @@ foreach($alledate as $datum) {
                 echo "<td><button type='submit' name='update' value='" . $id_termin . "'>Upd</button></td>";
                 echo "</tr>";
             }
+        }
+        if ($terminCount === 0) {
+            echo '<tr><td colspan="8">Keine Termine gefunden.</td></tr>';
+        }   
 }
 ?>
-</table>
-</div>
+        </table>
+        <?php if ($gefragtedatum !== '') {
+        echo '<h3>Insgesamt ' . ($terminCount) . ' Termine wurden in diesem Zeitraum gebucht.</h3>';
+        }?>
+    </div>
 </form>
 
-<h1>Logout Button</h1>
-    <form method="post">
-		<input type="submit" value="Ausloggen" name="btnLogout">
-	</form>
-
-</body>
+    <h1>Logout Button</h1>
+        <form method="post">
+            <input type="hidden" name="form_type" value="logout">
+		    <button type="submit">Ausloggen</button>
+</form>
+    </body>
 </html>
 <?php $conn->close(); ?>

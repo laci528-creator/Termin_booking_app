@@ -3,6 +3,7 @@
 require("includes/config.inc.php");
 require("includes/common.inc.php");
 require("includes/db.inc.php");
+require("includes/termin_functions.inc.php");
 
 session_start();
 $conn = dbConnect();
@@ -34,7 +35,7 @@ function termingenerator(string $anfang_zeit, string $ende_zeit, int $intervall)
     return $termine;
 }
 // anfrage mysql, ob der Termin schon gebucht ist oder nicht; 
-
+/*
 function pruefeTermin($conn, string $datum, string $anfang_zeit): string {
     $sql = "
         SELECT anfang_zeit
@@ -57,7 +58,7 @@ function pruefeTermin($conn, string $datum, string $anfang_zeit): string {
 
     return $row ? 'Nicht buchbar' : $anfang_zeit;
 
-}
+}*/
 if (isset($_GET['book_datum'], $_GET['book_termin'])) {
     $_SESSION['selecteddatum'] = $_GET['book_datum'];
     $_SESSION['selectedtermin'] = $_GET['book_termin'];
@@ -234,14 +235,14 @@ if ($dt !== null && isset(ORDINATION_ZEITEN[$dt->format('N')])) {
                 // Prüft für jeden Termin, ob er bereits gebucht ist.
                 // Freie Termine werden als Link zum Buchungsformular angezeigt.
                 foreach ($alles as $termin) {   
-                    $status = pruefeTermin($conn, $selecteddatum, $termin);
+                    $istGebucht = pruefeTermin($conn, $selecteddatum, $termin);
 
-                    if ($status === 'Nicht buchbar') {
-                                    echo htmlspecialchars($status) . "<br>";
+                    if ($istGebucht) {
+                        echo '<span class="gebucht">Nicht buchbar</span><br>';
                     } 
                     else {
                         echo "<a href='?jahr=" . urlencode($jahr) . "&monat=" . urlencode($monat) . "&datum=" . urlencode($selecteddatum) . "&book_datum=" . urlencode($selecteddatum) . "&book_termin=" . urlencode($termin) . "'>"
-                                        . htmlspecialchars($status)
+                                        . htmlspecialchars($termin)
                                         . "</a><br>";
                     }
                 }

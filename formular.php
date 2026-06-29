@@ -3,31 +3,9 @@
 require("includes/config.inc.php");
 require("includes/common.inc.php");
 require("includes/db.inc.php");
+require("includes/termin_functions.inc.php");
 
 session_start();
-
-function pruefeTermin($conn, string $datum, string $anfang_zeit): bool {
-    $sql = "
-        SELECT id
-        FROM gespeicherte_termin
-        WHERE datum = ?
-          AND anfang_zeit = ?
-        LIMIT 1
-    ";
-    $stmt = $conn->prepare($sql);
-
-	if (!$stmt) {
-    die("SQL Fehler bei Terminprüfung: " . $conn->error);
-	}
-    $stmt->bind_param("ss", $datum, $anfang_zeit);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $istGebucht = $result->num_rows > 0;
-	
-    $stmt->close();
-
-    return $istGebucht;
-}
 
 $conn = dbConnect();
 
@@ -49,9 +27,9 @@ $msg = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // prüfen, ob die Werte leer sind; wenn ja, Fehlermeldung zurückgeben; wenn nein, in die Datenbank einfügen
 	if(!empty($nachname) && !empty($telefon) && !empty($email) && !empty($datum) && !empty($anfang_zeit) && !empty($ende_zeit)) {
-		$terminStatus = pruefeTermin($conn, $datum, $anfang_zeit);
+		$istGebucht = pruefeTermin($conn, $datum, $anfang_zeit);
 
-		if ($terminStatus === false) {
+		if ($istGebucht === false) {
 
 			$sql_kunden = "INSERT INTO kunden (name, telefon, email) VALUES (?, ?, ?)";
 			$stmt = $conn->prepare($sql_kunden);
