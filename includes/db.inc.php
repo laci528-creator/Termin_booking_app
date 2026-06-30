@@ -1,4 +1,7 @@
 <?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
 function dbConnect():mysqli {
 	try {
 		$conn_intern = new mysqli(DB["hostadresse"],DB["username"],DB["passwort"],DB["DBName"]);

@@ -8,14 +8,7 @@ require("includes/termin_functions.inc.php");
 session_start();
 $conn = dbConnect();
 
-/**
- * Erzeugt verfügbare Zeitfenster zwischen Anfangs- und Endzeit.
- *
- * @param string $anfang_zeit
- * @param string $ende_zeit
- * @param int $intervall Intervall in Minuten
- * @return array
- */
+
 function termingenerator(string $anfang_zeit, string $ende_zeit, int $intervall): array { 
     if ($intervall <= 0) {
         throw new InvalidArgumentException('die Intervallzeit muss größer als 0 sein.');
@@ -35,30 +28,7 @@ function termingenerator(string $anfang_zeit, string $ende_zeit, int $intervall)
     return $termine;
 }
 // anfrage mysql, ob der Termin schon gebucht ist oder nicht; 
-/*
-function pruefeTermin($conn, string $datum, string $anfang_zeit): string {
-    $sql = "
-        SELECT anfang_zeit
-        FROM gespeicherte_termin
-        WHERE datum = ?
-          AND anfang_zeit = ?
-        LIMIT 1
-    ";
-    $stmt = $conn->prepare($sql);
 
-	if (!$stmt) {
-    die("SQL Fehler bei Terminprüfung: " . $conn->error);
-	}
-    $stmt->bind_param("ss", $datum, $anfang_zeit);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-	
-    $stmt->close();
-
-    return $row ? 'Nicht buchbar' : $anfang_zeit;
-
-}*/
 if (isset($_GET['book_datum'], $_GET['book_termin'])) {
     $_SESSION['selecteddatum'] = $_GET['book_datum'];
     $_SESSION['selectedtermin'] = $_GET['book_termin'];
@@ -82,8 +52,22 @@ $monate_deutsch = [
     12 => 'Dezember'
 ];
 
-if (isset($_GET['success']) && $_GET['success'] == 1) {
-    $success_msg = '<p class="success">Termin erfolgreich gebucht!</p>';
+function formatiereDatumDeutsch(string $datum): string {
+    $datumObjekt = DateTime::createFromFormat('Y-m-d', $datum);
+    return $datumObjekt ? $datumObjekt->format('d.m.Y') : $datum;
+}
+
+$success_msg = '';
+
+if (isset($_SESSION['booking_success'])) {
+    $datum = $_SESSION['booking_success']['datum'];
+    $anfang_zeit = $_SESSION['booking_success']['anfang_zeit'];
+
+    $success_msg = '<p class="success">Termin erfolgreich gebucht!<br>
+    Wir heißen Sie herzlich willkommen am ' . htmlspecialchars(formatiereDatumDeutsch($datum)) . 
+    ' um ' . htmlspecialchars(substr($anfang_zeit, 0, 5)) . ' Uhr.</p>';
+
+    unset($_SESSION['booking_success']);
 }
 
 $heute = new DateTime();
@@ -156,7 +140,7 @@ if ($dt !== null && isset(ORDINATION_ZEITEN[$dt->format('N')])) {
 	</head>
 	<body>
         <h1>Terminvereinbarung</h1>
-        <?php if (isset($success_msg)) echo $success_msg; ?>
+        <?php echo $success_msg; ?>
         <p>Willkommen auf unserer Terminvereinbarungsseite! Hier können Sie ganz einfach einen Termin für Ihre nächste Konsultation oder Behandlung vereinbaren. 
             Bitte wählen Sie ein Datum aus dem Kalender aus, um die verfügbaren Termine an diesem Tag zu sehen. Klicken Sie dann auf einen freien Termin, um Ihre Buchung abzuschließen. 
             Wir freuen uns darauf, Sie bald bei uns begrüßen zu dürfen!</p>
@@ -183,7 +167,7 @@ if ($dt !== null && isset(ORDINATION_ZEITEN[$dt->format('N')])) {
             </div>
             <table border="3" cellpadding="5" cellspacing="0">
                 <tr>
-                    <th>H</th><th>K</th><th>Sze</th><th>Cs</th><th>P</th><th>Szo</th><th>V</th>
+                    <th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>So</th>
                 </tr>
                 <tr>
                     <?php

@@ -17,7 +17,10 @@ $selectedtermin = $_SESSION['selectedtermin'] ?? '';
 $terminende = '';
 
 if (!empty($selectedtermin)) {
-    $terminende = date('H:i:s', strtotime($selectedtermin) + 30 * 60);
+    $timestamp = strtotime($selectedtermin);
+	if ($timestamp !== false) {
+        $terminende = date('H:i:s', $timestamp + 30 * 60);
+    }
 } // 30 Minuten hinzufügen, um die Endzeit zu berechnen
 
 $msg = '';
@@ -31,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$anfang_zeit = $selectedtermin;
 	$ende_zeit = $terminende;
 	
-// prüfen, ob die Werte leer sind; wenn ja, Fehlermeldung zurückgeben; wenn nein, in die Datenbank einfügen
+	// prüfen, ob die Werte leer sind; wenn ja, Fehlermeldung zurückgeben; wenn nein, in die Datenbank einfügen
 	if(!empty($nachname) && !empty($telefon) && !empty($email) && !empty($datum) && !empty($anfang_zeit) && !empty($ende_zeit)) {
 		if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
 		
@@ -40,36 +43,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				$msg = '<p class="error">' . htmlspecialchars($fehler) . '</p>';
 			}
 			elseif (!pruefeTermin($conn, $datum, $anfang_zeit)) {
+				$stmt = null;
+				$conn->begin_transaction();
 
-				$sql_kunden = "INSERT INTO kunden (name, telefon, email) VALUES (?, ?, ?)";
-				$stmt = $conn->prepare($sql_kunden);
-				$stmt->bind_param("sss", $nachname, $telefon, $email);
-				$stmt->execute();
+				try {
+					$sql_kunden = "INSERT INTO kunden (name, telefon, email) VALUES (?, ?, ?)";
+					$stmt = $conn->prepare($sql_kunden);
+				
+					if (!$stmt) {
+						throw new Exception("SQL Fehler bei Kundendaten: " . $conn->error);
+					}
 
-				if ($stmt->affected_rows > 0) {
+					$stmt->bind_param("sss", $nachname, $telefon, $email);
+					$stmt->execute();
+
+					if ($stmt->affected_rows <= 0) {
+						throw new Exception("Kundendaten konnten nicht gespeichert werden.");
+					}
 					$kunden_id = $conn->insert_id; // Letzte eingefügte ID abrufen
 					$stmt->close();
+					$stmt = null;
 					$sql_termin = "INSERT INTO gespeicherte_termin (kunden_id, datum, anfang_zeit, ende_zeit, bemerkung) 
-									VALUES (?, ?, ?, ?, ?)";
+										VALUES (?, ?, ?, ?, ?)";
 					$stmt = $conn->prepare($sql_termin);
+					
+					if (!$stmt) {
+						throw new Exception("SQL Fehler beim Termin: " . $conn->error);
+					}
+
 					$stmt->bind_param("issss", $kunden_id, $datum, $anfang_zeit, $ende_zeit, $bemerkung);
 					$stmt->execute();
 
-					if ($stmt->affected_rows > 0) {
-						$stmt->close();
-						unset($_SESSION['selecteddatum'], $_SESSION['selectedtermin']); // Session-Variablen zurücksetzen
-						header("Location: index.php?success=1");
-						exit;
-					} 
-					else {
-							$msg = '<p class="error">Fehler beim Buchen des Termins.</p>';
-							$stmt->close();
+
+					if ($stmt->affected_rows <= 0) {
+						throw new Exception("Termin konnte nicht gespeichert werden.");
 					}
-				} 
-				else {
-					$msg = '<p class="error">Fehler beim Speichern der Kundendaten.</p>';
+
 					$stmt->close();
+					$stmt = null;
+
+					$conn->commit();
+
+					$_SESSION['booking_success'] = [
+					'datum' => $datum,
+					'anfang_zeit' => $anfang_zeit
+					];
+					
+					unset($_SESSION['selecteddatum'], $_SESSION['selectedtermin']); // Session-Variablen zurücksetzen
+					header("Location: index.php");
+					exit;
+
+				} catch (Exception $e) {
+					$conn->rollback();
+
+
+					if ($stmt instanceof mysqli_stmt) {
+            			$stmt->close();
+        			}
+					$msg = '<p class="error">Fehler beim Buchen des Termins.</p>';
+
 				}
+
 			}
 			else {
 				$msg = '<p class="error">Der ausgewählte Termin ist bereits gebucht. Bitte wählen Sie einen anderen Termin.</p>';
