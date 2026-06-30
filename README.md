@@ -1,130 +1,229 @@
 # Termin Booking App
 
-A simple PHP/MySQL-based appointment booking application with an admin panel.
+**This README is available in English and German.**
+**Diese README ist auf Englisch und Deutsch verfügbar.**
 
-## Features
+* [English](#english)
+* [Deutsch](#deutsch)
 
-- date selection from a calendar
-- generation of available appointment slots
-- booking form
-- storing customer data in the database
-- storing appointments in the database
-- admin login
-- listing bookings on the admin page
-- logout function
+---
 
-## Technologies Used
+## English
 
-- PHP
-- MySQL / MariaDB
-- phpMyAdmin
-- HTML / CSS
-- XAMPP
-- Git / GitHub
+### Overview
 
-## Files
+Termin Booking App is a small PHP and MySQL/MariaDB appointment booking application with a simple admin area.
 
-- index.php – calendar and appointment selection
-- formular.php – booking form
-- einloggen.php – admin login
-- admin.php – admin panel
-- includes/ – configuration, database, and helper functions
+The project was created for learning and portfolio purposes. It demonstrates basic backend concepts such as sessions, form handling, validation, prepared statements, transactions, and admin authentication.
 
-## Database
+### Features
 
-The project currently uses the following tables:
+* Calendar-based appointment selection
+* Automatic generation of available time slots
+* Booking form for customer data
+* Server-side validation of appointment data
+* Email validation
+* Protection against double bookings
+* Database transaction during booking
+* Success message after successful booking
+* Admin login with hashed password verification
+* Protected admin area for viewing, editing, and deleting bookings
 
-- kunden
-- gespeicherte_termin
-- admin_users
+### Technologies
 
-## Current Status
+* PHP
+* MySQL / MariaDB
+* HTML
+* CSS
+* Sessions
+* Prepared Statements
+* Transactions
+* XAMPP
+* Git / GitHub
 
-The project already has a working basic version.  
-Booking, admin login, booking list display, and logout functionality have already been implemented.
+### Project Structure
 
-## Planned Improvements
+```text
+Termin_booking_app/
+├── index.php
+├── formular.php
+├── einloggen.php
+├── admin.php
+├── includes/
+│   ├── config.inc.php
+│   ├── common.inc.php
+│   ├── db.inc.php
+│   └── termin_functions.inc.php
+├── css/
+│   └── common.css
+├── docs/
+│   └── project_documentation.md
+└── errors/
+```
 
-- rewriting SQL queries using prepared statements
-- storing passwords as hashes and using password_verify()
-- full database-based admin user management
-- stronger protection against double bookings
-- deleting and editing bookings from the admin panel
-- improved validation and error handling
-- cleaner user interface
-- further improvements to the README and project structure
+### Main Functionality
 
-## Developer
+Users can select a date from the calendar, choose an available time slot, and complete the booking form.
 
-László Haraszti
+After a successful booking, the application redirects back to the main page and displays a confirmation message with the booked date and start time.
 
-## Note
+The booking process uses prepared statements and a database transaction. If one part of the booking fails, the transaction is rolled back.
 
-This project was created for learning and portfolio purposes and is still under development.
+### Detailed Documentation
 
-------------------------------------------------------------------------------------------------------------------
+A more detailed project description is available here:
 
-# Termin Booking App
+[Project Documentation](docs/project_documentation.md)
 
-Eine einfache PHP/MySQL-basierte Terminbuchungsanwendung mit Adminbereich.
+### Database
 
-## Funktionen
+The application uses three main tables:
 
-- Datumsauswahl über einen Kalender
-- Generierung verfügbarer Termine
-- Buchungsformular
-- Speicherung der Kundendaten in der Datenbank
-- Speicherung der Termine in der Datenbank
-- Admin-Login
-- Anzeige der Buchungen im Adminbereich
-- Logout-Funktion
+```text
+kunden
+gespeicherte_termin
+admin_users
+```
 
-## Verwendete Technologien
+To prevent double bookings, the appointment table should include a unique constraint:
 
-- PHP
-- MySQL / MariaDB
-- phpMyAdmin
-- HTML / CSS
-- XAMPP
-- Git / GitHub
+```sql
+ALTER TABLE gespeicherte_termin
+ADD CONSTRAINT unique_termin UNIQUE (datum, anfang_zeit);
+```
 
-## Dateien
+### Installation
 
-- index.php – Kalender und Terminauswahl
-- formular.php – Buchungsformular
-- einloggen.php – Admin-Login
-- admin.php – Adminbereich
-- includes/ – Konfiguration, Datenbank und Hilfsfunktionen
+1. Clone the repository:
 
-## Datenbank
+```bash
+git clone https://github.com/laci528-creator/Termin_booking_app.git
+```
 
-Das Projekt verwendet derzeit die folgenden Tabellen:
+2. Move the project folder into the XAMPP `htdocs` directory.
+3. Start Apache and MySQL.
+4. Create the database and required tables.
+5. Configure the database connection in `includes/config.inc.php`.
+6. Open the project in the browser:
 
-- kunden
-- gespeicherte_termin
-- admin_users
+```text
+http://localhost/Termin_booking_app
+```
 
-## Aktueller Stand
+### Possible Improvements
 
-Das Projekt verfügt bereits über eine funktionierende Basisversion.  
-Die Terminbuchung, der Admin-Login, die Anzeige der Buchungen und die Logout-Funktion sind bereits umgesetzt.
+* Add a SQL installation file
+* Add screenshots
+* Improve the admin panel design
+* Add email confirmation
+* Add customer cancellation functionality
+* Add Docker support
+* Add a live demo
 
-## Geplante Weiterentwicklungen
+---
 
-- Umstellung der SQL-Abfragen auf Prepared Statements
-- Speicherung von Passwörtern als Hashes und Verwendung von password_verify()
-- vollständige datenbankgestützte Verwaltung der Admin-Benutzer
-- stärkerer Schutz gegen Doppelbuchungen
-- Löschen und Bearbeiten von Buchungen im Adminbereich
-- verbesserte Validierung und Fehlerbehandlung
-- übersichtlichere Benutzeroberfläche
-- weitere Verbesserungen an README und Projektstruktur
+## Deutsch
 
-## Entwickler
+### Überblick
 
-László Haraszti
+Termin Booking App ist eine kleine Terminbuchungsanwendung mit PHP und MySQL/MariaDB und einem einfachen Adminbereich.
 
-## Hinweis
+Das Projekt wurde zu Lern- und Portfoliozwecken erstellt. Es zeigt grundlegende Backend-Konzepte wie Sessions, Formularverarbeitung, Validierung, Prepared Statements, Transactions und Admin-Authentifizierung.
 
-Dieses Projekt wurde zu Lern- und Portfoliozwecken erstellt und wird derzeit weiterentwickelt.
+### Funktionen
 
+* Terminauswahl über einen Kalender
+* Automatische Generierung freier Zeitfenster
+* Buchungsformular für Kundendaten
+* Serverseitige Validierung der Termindaten
+* E-Mail-Validierung
+* Schutz vor Doppelbuchungen
+* Datenbank-Transaction während der Buchung
+* Erfolgsmeldung nach erfolgreicher Buchung
+* Admin-Login mit Passwort-Hash-Prüfung
+* Geschützter Adminbereich zum Anzeigen, Bearbeiten und Löschen von Buchungen
+
+### Technologien
+
+* PHP
+* MySQL / MariaDB
+* HTML
+* CSS
+* Sessions
+* Prepared Statements
+* Transactions
+* XAMPP
+* Git / GitHub
+
+### Projektstruktur
+
+```text
+Termin_booking_app/
+├── index.php
+├── formular.php
+├── einloggen.php
+├── admin.php
+├── includes/
+│   ├── config.inc.php
+│   ├── common.inc.php
+│   ├── db.inc.php
+│   └── termin_functions.inc.php
+├── css/
+│   └── common.css
+├── docs/
+│   └── project_documentation.md
+└── errors/
+```
+
+### Hauptfunktionalität
+
+Benutzer können im Kalender ein Datum auswählen, einen freien Termin anklicken und das Buchungsformular ausfüllen.
+
+Nach erfolgreicher Buchung wird der Benutzer zur Startseite weitergeleitet und erhält eine Bestätigung mit Datum und Startzeit des Termins.
+
+Der Buchungsvorgang verwendet Prepared Statements und eine Datenbank-Transaction. Wenn ein Teil der Buchung fehlschlägt, wird die Transaction zurückgerollt.
+
+### Datenbank
+
+Die Anwendung verwendet drei Haupttabellen:
+
+```text
+kunden
+gespeicherte_termin
+admin_users
+```
+
+Um Doppelbuchungen zu verhindern, sollte die Termintabelle eine Unique Constraint enthalten:
+
+```sql
+ALTER TABLE gespeicherte_termin
+ADD CONSTRAINT unique_termin UNIQUE (datum, anfang_zeit);
+```
+
+### Installation
+
+1. Repository klonen:
+
+```bash
+git clone https://github.com/laci528-creator/Termin_booking_app.git
+```
+
+2. Projektordner in den XAMPP-Ordner `htdocs` verschieben.
+3. Apache und MySQL starten.
+4. Datenbank und benötigte Tabellen erstellen.
+5. Datenbankverbindung in `includes/config.inc.php` anpassen.
+6. Projekt im Browser öffnen:
+
+```text
+http://localhost/Termin_booking_app
+```
+
+### Mögliche Verbesserungen
+
+* SQL-Installationsdatei hinzufügen
+* Screenshots ergänzen
+* Adminbereich optisch verbessern
+* E-Mail-Bestätigung hinzufügen
+* Stornofunktion für Kunden ergänzen
+* Docker-Unterstützung hinzufügen
+* Live-Demo bereitstellen
