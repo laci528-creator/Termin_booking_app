@@ -18,30 +18,6 @@ if (empty($_SESSION["eingeloggt"])) {
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
-/*
-function pruefeTermin($conn, string $datum, string $anfang_zeit, int $termin_id): bool {
-    $sql = "
-        SELECT id
-        FROM gespeicherte_termin
-        WHERE datum = ?
-          AND anfang_zeit = ?
-          AND id <> ?
-        LIMIT 1
-    ";
-    $stmt = $conn->prepare($sql);
-
-	if (!$stmt) {
-    die("SQL Fehler bei Terminprüfung: " . $conn->error);
-	}
-    $stmt->bind_param("ssi", $datum, $anfang_zeit, $termin_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $istGebucht = $result->num_rows > 0;
-	
-    $stmt->close();
-
-    return $istGebucht;
-}*/
 
 function zweiWochenDaten(string $startdatum): array {
     $daten = [];
