@@ -43,7 +43,6 @@ The project was created for learning and portfolio purposes. It demonstrates bas
 
 ### Project Structure
 
-```text
 Termin_booking_app/
 ├── index.php
 ├── formular.php
@@ -59,7 +58,6 @@ Termin_booking_app/
 ├── docs/
 │   └── project_documentation.md
 └── errors/
-```
 
 ### Main Functionality
 
@@ -79,26 +77,20 @@ A more detailed project description is available here:
 
 The application uses three main tables:
 
-```text
 kunden
 gespeicherte_termin
 admin_users
-```
 
 To prevent double bookings, the appointment table should include a unique constraint:
 
-```sql
 ALTER TABLE gespeicherte_termin
 ADD CONSTRAINT unique_termin UNIQUE (datum, anfang_zeit);
-```
 
 ### Installation
 
 1. Clone the repository:
 
-```bash
 git clone https://github.com/laci528-creator/Termin_booking_app.git
-```
 
 2. Move the project folder into the XAMPP `htdocs` directory.
 3. Start Apache and MySQL.
@@ -106,9 +98,7 @@ git clone https://github.com/laci528-creator/Termin_booking_app.git
 5. Configure the database connection in `includes/config.inc.php`.
 6. Open the project in the browser:
 
-```text
 http://localhost/Termin_booking_app
-```
 
 ### Possible Improvements
 
@@ -157,7 +147,6 @@ Das Projekt wurde zu Lern- und Portfoliozwecken erstellt. Es zeigt grundlegende 
 
 ### Projektstruktur
 
-```text
 Termin_booking_app/
 ├── index.php
 ├── formular.php
@@ -173,7 +162,6 @@ Termin_booking_app/
 ├── docs/
 │   └── project_documentation.md
 └── errors/
-```
 
 ### Hauptfunktionalität
 
@@ -187,26 +175,20 @@ Der Buchungsvorgang verwendet Prepared Statements und eine Datenbank-Transaction
 
 Die Anwendung verwendet drei Haupttabellen:
 
-```text
 kunden
 gespeicherte_termin
 admin_users
-```
 
 Um Doppelbuchungen zu verhindern, sollte die Termintabelle eine Unique Constraint enthalten:
 
-```sql
 ALTER TABLE gespeicherte_termin
 ADD CONSTRAINT unique_termin UNIQUE (datum, anfang_zeit);
-```
 
 ### Installation
 
 1. Repository klonen:
 
-```bash
 git clone https://github.com/laci528-creator/Termin_booking_app.git
-```
 
 2. Projektordner in den XAMPP-Ordner `htdocs` verschieben.
 3. Apache und MySQL starten.
@@ -214,9 +196,7 @@ git clone https://github.com/laci528-creator/Termin_booking_app.git
 5. Datenbankverbindung in `includes/config.inc.php` anpassen.
 6. Projekt im Browser öffnen:
 
-```text
 http://localhost/Termin_booking_app
-```
 
 ### Mögliche Verbesserungen
 
