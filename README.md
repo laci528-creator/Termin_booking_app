@@ -41,23 +41,6 @@ The project was created for learning and portfolio purposes. It demonstrates bas
 * XAMPP
 * Git / GitHub
 
-### Project Structure
-
-Termin_booking_app/
-├── index.php
-├── formular.php
-├── einloggen.php
-├── admin.php
-├── includes/
-│   ├── config.inc.php
-│   ├── common.inc.php
-│   ├── db.inc.php
-│   └── termin_functions.inc.php
-├── css/
-│   └── common.css
-├── docs/
-│   └── project_documentation.md
-└── errors/
 
 ### Main Functionality
 
@@ -145,23 +128,6 @@ Das Projekt wurde zu Lern- und Portfoliozwecken erstellt. Es zeigt grundlegende 
 * XAMPP
 * Git / GitHub
 
-### Projektstruktur
-
-Termin_booking_app/
-├── index.php
-├── formular.php
-├── einloggen.php
-├── admin.php
-├── includes/
-│   ├── config.inc.php
-│   ├── common.inc.php
-│   ├── db.inc.php
-│   └── termin_functions.inc.php
-├── css/
-│   └── common.css
-├── docs/
-│   └── project_documentation.md
-└── errors/
 
 ### Hauptfunktionalität
 
