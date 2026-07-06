@@ -13,7 +13,7 @@
 
 ### Overview
 
-A small PHP and MySQL/MariaDB appointment booking application with calendar-based appointment selection and a protected admin area.
+Appointment Booking App is a small full-stack web application built with PHP and MySQL/MariaDB. Users can select available appointment slots from a calendar, submit booking data through a validated form, while administrators can log in to a protected admin area to view, edit and delete bookings.
 
 The project was created for learning and portfolio purposes. It demonstrates basic backend concepts such as sessions, form handling, validation, prepared statements, transactions, and admin authentication.
 
@@ -45,17 +45,12 @@ The project was created for learning and portfolio purposes. It demonstrates bas
 
 ### Main Functionality
 
-Users can select a date from the calendar, choose an available time slot, and complete the booking form.
+Users can select available appointment slots from a calendar and submit booking data through a validated form. Administrators can log in to a protected admin area to view, edit, and delete bookings.
 
 After a successful booking, the application redirects back to the main page and displays a confirmation message with the booked date and start time.
 
 The booking process uses prepared statements and a database transaction. If one part of the booking fails, the transaction is rolled back.
 
-### Detailed Documentation
-
-A more detailed project description is available here:
-
-[Project Documentation](docs/project_documentation.md)
 
 ### Database
 
@@ -65,7 +60,7 @@ kunden
 gespeicherte_termin
 admin_users
 
-To prevent double bookings, the appointment table should include a unique constraint:
+To prevent double bookings, the appointment table include a unique constraint:
 
 ALTER TABLE gespeicherte_termin
 ADD CONSTRAINT unique_termin UNIQUE (datum, anfang_zeit);
@@ -78,21 +73,34 @@ git clone https://github.com/laci528-creator/Termin_booking_app.git
 
 2. Move the project folder into the XAMPP `htdocs` directory.
 3. Start Apache and MySQL.
-4. Create the database and required tables.
+4. Create the database and import database.sql.
 5. Configure the database connection in `includes/config.inc.php`.
 6. Open the project in the browser:
 
 http://localhost/Termin_booking_app
 
-### Possible Improvements
+## Current Status
 
-* Add a SQL installation file
-* Add screenshots
-* Improve the admin panel design
+The application is functional and includes the main features of a simple appointment booking system.
+
+## Planned Improvements
+
 * Add email confirmation
 * Add customer cancellation functionality
 * Add Docker support
 * Add a live demo
+
+## What I Learned
+
+During this project I practiced:
+
+* working with PHP sessions
+* building forms with server-side validation
+* using prepared statements to prevent SQL injection
+* handling database transactions
+* protecting an admin area with login authentication
+* preventing double bookings with application logic and a database constraint
+* structuring a small PHP project into reusable include files
 
 ## Screenshots
 
@@ -114,13 +122,12 @@ For more details, see:
 
 ## Deutsch
 
-# Terminbuchungs-App
 
 ### Überblick
 
 Termin Booking App ist eine kleine Terminbuchungsanwendung mit PHP und MySQL/MariaDB und einem einfachen Adminbereich.
 
-Das Projekt wurde zu Lern- und Portfoliozwecken erstellt. Es zeigt grundlegende Backend-Konzepte wie Sessions, Formularverarbeitung, Validierung, Prepared Statements, Transactions und Admin-Authentifizierung.
+Das Projekt wurde zu Lern- und Portfoliozwecken erstellt. Es zeigt grundlegende Backend-Konzepte wie Sessions, Formularverarbeitung, Validierung, vorbereitete SQL-Abfragen, Datenbanktransaktion und Admin-Authentifizierung.
 
 ### Funktionen
 
@@ -130,7 +137,7 @@ Das Projekt wurde zu Lern- und Portfoliozwecken erstellt. Es zeigt grundlegende 
 * Serverseitige Validierung der Termindaten
 * E-Mail-Validierung
 * Schutz vor Doppelbuchungen
-* Datenbank-Transaction während der Buchung
+* Datenbanktransaktion während der Buchung
 * Erfolgsmeldung nach erfolgreicher Buchung
 * Admin-Login mit Passwort-Hash-Prüfung
 * Geschützter Adminbereich zum Anzeigen, Bearbeiten und Löschen von Buchungen
@@ -143,7 +150,7 @@ Das Projekt wurde zu Lern- und Portfoliozwecken erstellt. Es zeigt grundlegende 
 * CSS
 * Sessions
 * Prepared Statements
-* Transactions
+* Datenbanktransaktion
 * XAMPP
 * Git / GitHub
 
@@ -154,7 +161,7 @@ Benutzer können im Kalender ein Datum auswählen, einen freien Termin anklicken
 
 Nach erfolgreicher Buchung wird der Benutzer zur Startseite weitergeleitet und erhält eine Bestätigung mit Datum und Startzeit des Termins.
 
-Der Buchungsvorgang verwendet Prepared Statements und eine Datenbank-Transaction. Wenn ein Teil der Buchung fehlschlägt, wird die Transaction zurückgerollt.
+Der Buchungsvorgang verwendet Prepared Statements und eine Datenbanktransaktion. Falls ein Teil der Buchung fehlschlägt, wird die Transaktion zurückgerollt.
 
 ### Datenbank
 
@@ -164,7 +171,7 @@ kunden
 gespeicherte_termin
 admin_users
 
-Um Doppelbuchungen zu verhindern, sollte die Termintabelle eine Unique Constraint enthalten:
+Um Doppelbuchungen zu verhindern, die Termintabelle eine Unique Constraint enthalten:
 
 ALTER TABLE gespeicherte_termin
 ADD CONSTRAINT unique_termin UNIQUE (datum, anfang_zeit);
@@ -177,18 +184,52 @@ git clone https://github.com/laci528-creator/Termin_booking_app.git
 
 2. Projektordner in den XAMPP-Ordner `htdocs` verschieben.
 3. Apache und MySQL starten.
-4. Datenbank und benötigte Tabellen erstellen.
+4. Datenbank erstellen und database.sql importieren.
 5. Datenbankverbindung in `includes/config.inc.php` anpassen.
 6. Projekt im Browser öffnen:
 
 http://localhost/Termin_booking_app
 
-### Mögliche Verbesserungen
 
-* SQL-Installationsdatei hinzufügen
-* Screenshots ergänzen
-* Adminbereich optisch verbessern
+## Aktueller Stand
+
+Die Anwendung ist funktionsfähig und enthält die wichtigsten Funktionen eines einfachen Terminbuchungssystems.
+
+## Geplante Verbesserungen
+
 * E-Mail-Bestätigung hinzufügen
-* Stornofunktion für Kunden ergänzen
+* Stornierungsfunktion für Kunden hinzufügen
 * Docker-Unterstützung hinzufügen
-* Live-Demo bereitstellen
+* Live-Demo hinzufügen
+
+## Was ich gelernt habe
+
+Während dieses Projekts habe ich Folgendes geübt:
+
+* Arbeiten mit PHP-Sessions
+* Erstellen von Formularen mit serverseitiger Validierung
+* Verwendung von Prepared Statements zur Vermeidung von SQL-Injection
+* Umgang mit Datenbanktransaktionen
+* Schutz eines Adminbereichs durch Login-Authentifizierung
+* Vermeidung von Doppelbuchungen durch Programmlogik und eine Datenbank-Constraint
+* Strukturierung eines kleinen PHP-Projekts in wiederverwendbare Include-Dateien
+
+## Screenshots
+
+### Kalenderansicht
+
+![Kalenderansicht](docs/screenshots/calendar-view.png)
+
+### Buchungsformular
+
+![Buchungsformular](docs/screenshots/booking-form.png)
+
+### Adminbereich
+
+![Adminbereich](docs/screenshots/admin-area.png)
+
+## Weitere Dokumentation
+
+Weitere Details befinden sich hier:
+
+[Projektdokumentation](docs/project_documentation.md)

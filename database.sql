@@ -1,3 +1,6 @@
+-- Database structure for the Termin Booking App
+-- Import this file into a MySQL/MariaDB database before running the application.
+
 CREATE TABLE IF NOT EXISTS kunden (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
