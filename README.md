@@ -1,4 +1,5 @@
-# Termin Booking App
+# Appointment Booking App
+
 
 **This README is available in English and German.**
 **Diese README ist auf Englisch und Deutsch verfügbar.**
@@ -12,7 +13,7 @@
 
 ### Overview
 
-Termin Booking App is a small PHP and MySQL/MariaDB appointment booking application with a simple admin area.
+A small PHP and MySQL/MariaDB appointment booking application with calendar-based appointment selection and a protected admin area.
 
 The project was created for learning and portfolio purposes. It demonstrates basic backend concepts such as sessions, form handling, validation, prepared statements, transactions, and admin authentication.
 
@@ -93,9 +94,27 @@ http://localhost/Termin_booking_app
 * Add Docker support
 * Add a live demo
 
+## Screenshots
+
+### Calendar View
+![Calendar view](docs/screenshots/calendar-view.png)
+
+### Booking Form
+![Booking form](docs/screenshots/booking-form.png)
+
+### Admin Area
+![Admin area](docs/screenshots/admin-area.png)
+
+## Further Documentation
+
+For more details, see:
+[Project Documentation](docs/project_documentation.md)
+
 ---
 
 ## Deutsch
+
+# Terminbuchungs-App
 
 ### Überblick
 
