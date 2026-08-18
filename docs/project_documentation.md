@@ -66,7 +66,7 @@ Termin_booking_app/
 ├── README.md
 │
 ├── includes/
-│   ├── config.inc.php
+│   ├── config.example.inc.php
 │   ├── common.inc.php
 │   ├── db.inc.php
 │   └── termin_functions.inc.php
@@ -112,13 +112,16 @@ Contains database helper functions for connecting to the database and executing 
 
 ## Database
 
-The application uses the following main tables:
+The application uses four main tables:
 
-```text
-kunden
-gespeicherte_termin
-admin_users
-```
+- `kunden` – stores customer data
+- `gespeicherte_termin` – stores booked appointments
+- `admin_users` – stores administrator accounts
+- `ordination_zeiten` – stores configurable ordination hours and appointment slot durations
+
+The `gespeicherte_termin` table uses a unique constraint on `datum` and `anfang_zeit` to prevent duplicate bookings.
+
+The `ordination_zeiten` table stores the weekday, start time, end time, slot duration and active status of each ordination period.
 
 ### Recommended Database Constraint
 
@@ -131,41 +134,15 @@ ADD CONSTRAINT unique_termin UNIQUE (datum, anfang_zeit);
 
 ## Installation
 
-1. Clone the repository:
-
-```bash
-git clone https://github.com/laci528-creator/Termin_booking_app.git
-```
-
+1. Clone the repository.
 2. Move the project folder into the XAMPP `htdocs` directory.
-
-3. Start Apache and MySQL in XAMPP.
-
-4. Create a database, for example:
-
-```sql
-CREATE DATABASE terminvereinbarung_db;
-```
-
-5. Create the required tables:
-
-```text
-kunden
-gespeicherte_termin
-admin_users
-```
-
-6. Configure the database connection in:
-
-```text
-includes/config.inc.php
-```
-
-7. Open the application in the browser:
-
-```text
-http://localhost/Termin_booking_app
-```
+3. Start Apache and MySQL.
+4. Create a MySQL/MariaDB database.
+5. Import `database.sql`.
+6. Import `seed.sql` to add the default ordination hours.
+7. Copy `includes/config.example.inc.php` to `includes/config.inc.php`.
+8. Enter your local database credentials in `config.inc.php`.
+9. Open the application in the browser.
 
 ## Example Workflow
 
@@ -199,17 +176,13 @@ It is still a learning and portfolio project, but it already demonstrates severa
 
 ## Possible Future Improvements
 
-* Improve the design of the user interface
-* Add a dedicated SQL installation file
-* Add screenshots to the README
-* Improve the admin panel layout
-* Use prepared statements consistently in all admin queries
-* Add more detailed form validation
+* Make ordination hours editable from the admin area
 * Add email confirmation for bookings
-* Add cancellation functionality for customers
-* Add a better configuration structure with `config.example.inc.php`
+* Add customer cancellation functionality
+* Add support for holidays and exceptional opening hours
+* Use prepared statements consistently in all admin queries
+* Improve the admin panel layout
 * Add Docker support
-* Add a live demo
 
 ## Developer
 
@@ -280,7 +253,7 @@ Termin_booking_app/
 ├── README.md
 │
 ├── includes/
-│   ├── config.inc.php
+│   ├── config.example.inc.php
 │   ├── common.inc.php
 │   ├── db.inc.php
 │   └── termin_functions.inc.php
@@ -326,13 +299,16 @@ Enthält Hilfsfunktionen für die Datenbankverbindung und Datenbankabfragen.
 
 ## Datenbank
 
-Die Anwendung verwendet hauptsächlich folgende Tabellen:
+Die Anwendung verwendet vier Haupttabellen:
 
-```text
-kunden
-gespeicherte_termin
-admin_users
-```
+- `kunden` – speichert Kundendaten
+- `gespeicherte_termin` – speichert gebuchte Termine
+- `admin_users` – speichert Administratorkonten
+- `ordination_zeiten` – speichert konfigurierbare Ordinationszeiten und Terminintervalle
+
+Die Tabelle `gespeicherte_termin` verwendet eine Unique Constraint für `datum` und `anfang_zeit`, um Doppelbuchungen zu verhindern.
+
+Die Tabelle `ordination_zeiten` speichert Wochentag, Startzeit, Endzeit, Termindauer und Aktivstatus der jeweiligen Ordinationszeit.
 
 ### Empfohlene Datenbank-Constraint
 
@@ -345,41 +321,15 @@ ADD CONSTRAINT unique_termin UNIQUE (datum, anfang_zeit);
 
 ## Installation
 
-1. Repository klonen:
-
-```bash
-git clone https://github.com/laci528-creator/Termin_booking_app.git
-```
-
-2. Den Projektordner in den XAMPP-Ordner `htdocs` verschieben.
-
-3. Apache und MySQL in XAMPP starten.
-
-4. Eine Datenbank erstellen, zum Beispiel:
-
-```sql
-CREATE DATABASE terminvereinbarung_db;
-```
-
-5. Die benötigten Tabellen erstellen:
-
-```text
-kunden
-gespeicherte_termin
-admin_users
-```
-
-6. Die Datenbankverbindung in folgender Datei anpassen:
-
-```text
-includes/config.inc.php
-```
-
-7. Die Anwendung im Browser öffnen:
-
-```text
-http://localhost/Termin_booking_app
-```
+1. Klonen Sie das Repository.
+2. Verschieben Sie den Projektordner in das XAMPP-Verzeichnis `htdocs`.
+3. Starten Sie Apache und MySQL.
+4. Erstellen Sie eine MySQL-/MariaDB-Datenbank.
+5. Importieren Sie `database.sql`.
+6. Importieren Sie `seed.sql`, um die Standard-Ordinationszeiten hinzuzufügen.
+7. Kopieren Sie `includes/config.example.inc.php` nach `includes/config.inc.php`.
+8. Tragen Sie Ihre lokalen Datenbankzugangsdaten in `config.inc.php` ein.
+9. Öffnen Sie die Anwendung im Browser.
 
 ## Beispielhafter Ablauf
 
@@ -413,17 +363,13 @@ Sie ist weiterhin ein Lern- und Portfolio-Projekt, zeigt aber bereits wichtige B
 
 ## Mögliche zukünftige Verbesserungen
 
-* Benutzeroberfläche weiter verbessern
-* Eigene SQL-Installationsdatei hinzufügen
-* Screenshots in die README einfügen
-* Adminbereich optisch und strukturell verbessern
-* Prepared Statements konsequent in allen Admin-Abfragen verwenden
-* Formularvalidierung weiter ausbauen
+* Ordinationszeiten im Adminbereich bearbeitbar machen
 * E-Mail-Bestätigung für Buchungen hinzufügen
-* Stornofunktion für Kunden ergänzen
-* Bessere Konfigurationsstruktur mit `config.example.inc.php`
+* Stornierungsfunktion für Kunden hinzufügen
+* Unterstützung für Feiertage und Sonderöffnungszeiten hinzufügen
+* Vorgefertigte Aussagen in allen Admin-Abfragen einheitlich verwenden
+* Layout des Admin-Panels verbessern
 * Docker-Unterstützung hinzufügen
-* Live-Demo bereitstellen
 
 ## Entwickler
 
