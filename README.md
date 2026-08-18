@@ -20,10 +20,12 @@ The project was created for learning and portfolio purposes. It demonstrates bas
 ### Features
 
 * Calendar-based appointment selection
+* Database-managed ordination hours
 * Automatic generation of available time slots
+* Configurable appointment slot duration
 * Booking form for customer data
-* Server-side validation of appointment data
-* Email validation
+* Server-side validation of appointment data and available slots
+* Booking limited to the allowed future booking period
 * Protection against double bookings
 * Database transaction during booking
 * Success message after successful booking
@@ -54,13 +56,14 @@ The booking process uses prepared statements and a database transaction. If one 
 
 ### Database
 
-The application uses three main tables:
+The application uses four main tables:
 
-kunden
-gespeicherte_termin
-admin_users
+- `kunden` – stores customer data
+- `gespeicherte_termin` – stores booked appointments
+- `admin_users` – stores administrator accounts
+- `ordination_zeiten` – stores configurable opening hours and appointment slot durations
 
-To prevent double bookings, the appointment table include a unique constraint:
+To prevent double bookings, the appointment table includes a unique constraint:
 
 ALTER TABLE gespeicherte_termin
 ADD CONSTRAINT unique_termin UNIQUE (datum, anfang_zeit);
@@ -74,9 +77,10 @@ git clone https://github.com/laci528-creator/Termin_booking_app.git
 2. Move the project folder into the XAMPP `htdocs` directory.
 3. Start Apache and MySQL.
 4. Create the database and import database.sql.
-5. Copy `includes/config.example.inc.php` to `includes/config.inc.php` 
+5. Import `seed.sql` to add the default ordination hours.
+6. Copy `includes/config.example.inc.php` to `includes/config.inc.php` 
     and enter your local database credentials.
-6. Open the project in the browser:
+7. Open the project in the browser:
 
 http://localhost/Termin_booking_app
 
@@ -84,12 +88,17 @@ http://localhost/Termin_booking_app
 
 The application is functional and includes the main features of a simple appointment booking system.
 
+### Live Demo
+
+A live version of the application is available via the link in the repository description.
+
 ## Planned Improvements
 
-* Add email confirmation
+* Add email confirmation after successful booking
 * Add customer cancellation functionality
+* Make ordination hours editable from the admin area
+* Add support for holidays and exceptional opening hours
 * Add Docker support
-* Add a live demo
 
 ## What I Learned
 
@@ -133,9 +142,12 @@ Das Projekt wurde zu Lern- und Portfoliozwecken erstellt. Es zeigt grundlegende 
 ### Funktionen
 
 * Terminauswahl über einen Kalender
+* Datenbankgestützte Verwaltung der Ordinationszeiten
 * Automatische Generierung freier Zeitfenster
+* Konfigurierbare Termindauer
 * Buchungsformular für Kundendaten
-* Serverseitige Validierung der Termindaten
+* Serverseitige Prüfung der gewählten Termine anhand der Ordinationszeiten
+* Begrenzung des buchbaren Zeitraums
 * E-Mail-Validierung
 * Schutz vor Doppelbuchungen
 * Datenbanktransaktion während der Buchung
@@ -166,11 +178,12 @@ Der Buchungsvorgang verwendet Prepared Statements und eine Datenbanktransaktion.
 
 ### Datenbank
 
-Die Anwendung verwendet drei Haupttabellen:
+Die Anwendung verwendet vier Haupttabellen:
 
-kunden
-gespeicherte_termin
-admin_users
+* `kunden` – speichert Kundendaten
+* `gespeicherte_termin` – speichert gebuchte Termine
+* `admin_users` – speichert Administratorkonten
+* `ordination_zeiten` – speichert konfigurierbare Ordinationszeiten und Terminintervalle
 
 Um Doppelbuchungen zu verhindern, die Termintabelle eine Unique Constraint enthalten:
 
@@ -186,9 +199,10 @@ git clone https://github.com/laci528-creator/Termin_booking_app.git
 2. Projektordner in den XAMPP-Ordner `htdocs` verschieben.
 3. Apache und MySQL starten.
 4. Datenbank erstellen und database.sql importieren.
-5. Kopieren Sie `includes/config.example.inc.php` nach `includes/config.inc.php`
+5. Importieren Sie `seed.sql`, um die Standard-Ordinationszeiten hinzuzufügen.
+6. Kopieren Sie `includes/config.example.inc.php` nach `includes/config.inc.php`
     und geben Sie Ihre lokalen Datenbankzugangsdaten ein.
-6. Projekt im Browser öffnen:
+7. Projekt im Browser öffnen:
 
 http://localhost/Termin_booking_app
 
@@ -199,10 +213,11 @@ Die Anwendung ist funktionsfähig und enthält die wichtigsten Funktionen eines 
 
 ## Geplante Verbesserungen
 
-* E-Mail-Bestätigung hinzufügen
+* E-Mail-Bestätigung nach erfolgreicher Buchung hinzufügen
 * Stornierungsfunktion für Kunden hinzufügen
+* Öffnungszeiten im Adminbereich bearbeitbar machen
+* Unterstützung für Feiertage und Sonderöffnungszeiten hinzufügen
 * Docker-Unterstützung hinzufügen
-* Live-Demo hinzufügen
 
 ## Was ich gelernt habe
 
