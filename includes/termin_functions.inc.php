@@ -60,7 +60,12 @@ function validiereTermin(string $datum, string $anfang_zeit, string $ende_zeit):
 	$startObjekt = DateTime::createFromFormat('H:i:s', $anfang_zeit);
     $endeObjekt = DateTime::createFromFormat('H:i:s', $ende_zeit);
 
-	 if (!$startObjekt || !$endeObjekt) {
+	 if (
+        !$startObjekt || 
+        !$endeObjekt ||
+        $startObjekt->format('H:i:s') !== $anfang_zeit ||
+        $endeObjekt->format('H:i:s') !== $ende_zeit
+     ) {
         return "Die Uhrzeit ist ungültig.";
     }
 
@@ -69,6 +74,11 @@ function validiereTermin(string $datum, string $anfang_zeit, string $ende_zeit):
     }
 
     $heute = new DateTime('today');
+    $maxDatum = (clone $heute)->modify('+3 months');
+
+    if ($datumObjekt > $maxDatum) {
+    return "Termine können maximal drei Monate im Voraus gebucht werden.";
+    }
 
     if ($datumObjekt < $heute) {
         return "Termine in der Vergangenheit sind nicht erlaubt.";
@@ -82,5 +92,89 @@ function validiereTermin(string $datum, string $anfang_zeit, string $ende_zeit):
 
     return null;
 }
+
+function findeTerminSlot(
+    mysqli $conn,
+    string $datum,
+    string $anfang_zeit
+): ?array {
+
+    $datumObjekt = DateTime::createFromFormat('Y-m-d', $datum);
+
+    if (!$datumObjekt || $datumObjekt->format('Y-m-d') !== $datum) {
+        return null;
+    }
+
+    $zeitObjekt = DateTime::createFromFormat('H:i:s', $anfang_zeit);
+
+    if (!$zeitObjekt || $zeitObjekt->format('H:i:s') !== $anfang_zeit) {
+        return null;
+    }
+
+    $wochentag = (int)$datumObjekt->format('N');
+
+    $sql = "
+        SELECT
+            start_zeit,
+            ende_zeit,
+            slot_dauer
+        FROM ordination_zeiten
+        WHERE
+            wochentag = ?
+            AND aktiv = 1
+        ORDER BY start_zeit
+    ";
+
+    $stmt = $conn->prepare($sql);
+
+    if (!$stmt) {
+        throw new RuntimeException(
+            "SQL Fehler bei Ordinationszeiten: " . $conn->error
+        );
+    }
+
+    $stmt->bind_param("i", $wochentag);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+
+    while ($ordination = $result->fetch_assoc()) {
+
+        $start = strtotime($ordination["start_zeit"]);
+        $ende = strtotime($ordination["ende_zeit"]);
+        $termin = strtotime($anfang_zeit);
+
+        $slotDauer = (int)$ordination["slot_dauer"];
+        if ($slotDauer <= 0) {
+            continue;
+        }
+
+        $slotSekunden = $slotDauer * 60;
+
+        if (
+            $termin >= $start &&
+            $termin < $ende &&
+            ($termin - $start) % $slotSekunden === 0 &&
+            $termin + $slotSekunden <= $ende
+        ) {
+
+            $stmt->close();
+
+            return [
+                "slot_dauer" => $slotDauer,
+                "ende_zeit" => date(
+                    "H:i:s",
+                    $termin + $slotSekunden
+                )
+            ];
+        }
+    }
+
+    $stmt->close();
+
+    return null;
+}
+
+
 
 ?>

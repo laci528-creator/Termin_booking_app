@@ -108,26 +108,50 @@ $naechstErlaubt = $naechsterMonat <= $endGrenze;
 // ausgewähltes Datum aus der URL abrufen, wenn vorhanden
 $selecteddatum = $_GET['datum'] ?? '';  
 
-
 $dt = null;
+
 if ($selecteddatum !== '') {
-    $dt = new DateTime($selecteddatum);
+
+    $dt = DateTime::createFromFormat('Y-m-d', $selecteddatum);
+
+    if (!$dt || $dt->format('Y-m-d') !== $selecteddatum) {
+        $dt = null;
+    }
 }
 
-const ORDINATION_ZEITEN = [
-    1 => ["08:00", "12:00"],
-    2 => ["13:00", "18:00"],
-    3 => ["08:00", "12:00"],
-    4 => ["13:00", "18:00"],
-    5 => ["08:00", "12:00"]
-];
+$ordinationZeiten = [];
 
-//Ordinationszeiten für den ausgewählten Wochentag ermitteln.
-if ($dt !== null && isset(ORDINATION_ZEITEN[$dt->format('N')])) {   
-    $anfang_zeit = ORDINATION_ZEITEN[$dt->format('N')][0];
-    $ende_zeit = ORDINATION_ZEITEN[$dt->format('N')][1];
+if ($dt !== null) {
+
+    $wochentag = (int)$dt->format('N');
+
+    $sql = "
+        SELECT
+            start_zeit,
+            ende_zeit,
+            slot_dauer
+        FROM ordination_zeiten
+        WHERE
+            wochentag = ?
+            AND aktiv = 1
+        ORDER BY start_zeit
+    ";
+
+    $stmt = $conn->prepare($sql);
+
+    if (!$stmt) {
+        die("SQL Fehler bei Ordinationszeiten: " . $conn->error);
+    }
+
+    $stmt->bind_param("i", $wochentag);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+
+    $ordinationZeiten = $result->fetch_all(MYSQLI_ASSOC);
+
+    $stmt->close();
 }
-
 
 ?>
 <!doctype html>
@@ -210,11 +234,18 @@ if ($dt !== null && isset(ORDINATION_ZEITEN[$dt->format('N')])) {
             // Überprüft, ob die Variablen $anfang_zeit und $ende_zeit gesetzt sind. 
             if ($selecteddatum === '') {
                 echo "<p>Bitte wählen Sie ein Datum aus dem Kalender aus, um die verfügbaren Termine an diesem Tag zu sehen.</p>";
-            } elseif (!isset($anfang_zeit) || !isset($ende_zeit)) {
+            } elseif (empty($ordinationZeiten)) {
                 echo "<p>Für dieses Datum sind keine Termine verfügbar.</p>";            
             }
             else {
-                $alles = termingenerator($selecteddatum . " " . $anfang_zeit, $selecteddatum . " " . $ende_zeit, 30);
+                
+                    foreach ($ordinationZeiten as $ordinationZeit) {
+            
+            $alles = termingenerator(
+                $selecteddatum . " " . $ordinationZeit["start_zeit"], 
+                $selecteddatum . " " . $ordinationZeit["ende_zeit"], 
+                (int)$ordinationZeit["slot_dauer"]
+            );
 
                 // Prüft für jeden Termin, ob er bereits gebucht ist.
                 // Freie Termine werden als Link zum Buchungsformular angezeigt.
@@ -225,9 +256,20 @@ if ($dt !== null && isset(ORDINATION_ZEITEN[$dt->format('N')])) {
                         echo '<span class="gebucht">Nicht buchbar</span><br>';
                     } 
                     else {
-                        echo "<a href='?jahr=" . urlencode($jahr) . "&monat=" . urlencode($monat) . "&datum=" . urlencode($selecteddatum) . "&book_datum=" . urlencode($selecteddatum) . "&book_termin=" . urlencode($termin) . "'>"
-                                        . htmlspecialchars($termin)
-                                        . "</a><br>";
+                        echo "<a href='?jahr=" 
+                                . urlencode($jahr) 
+                                . "&monat=" 
+                                . urlencode($monat) 
+                                . "&datum=" 
+                                . urlencode($selecteddatum) 
+                                . "&book_datum=" 
+                                . urlencode($selecteddatum) 
+                                . "&book_termin=" 
+                                . urlencode($termin) 
+                                . "'>"
+                                . htmlspecialchars($termin)
+                                . "</a><br>";
+                        }
                     }
                 }
             }
