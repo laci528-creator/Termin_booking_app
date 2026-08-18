@@ -74,7 +74,8 @@ git clone https://github.com/laci528-creator/Termin_booking_app.git
 2. Move the project folder into the XAMPP `htdocs` directory.
 3. Start Apache and MySQL.
 4. Create the database and import database.sql.
-5. Configure the database connection in `includes/config.inc.php`.
+5. Copy `includes/config.example.inc.php` to `includes/config.inc.php` 
+    and enter your local database credentials.
 6. Open the project in the browser:
 
 http://localhost/Termin_booking_app
@@ -185,7 +186,8 @@ git clone https://github.com/laci528-creator/Termin_booking_app.git
 2. Projektordner in den XAMPP-Ordner `htdocs` verschieben.
 3. Apache und MySQL starten.
 4. Datenbank erstellen und database.sql importieren.
-5. Datenbankverbindung in `includes/config.inc.php` anpassen.
+5. Kopieren Sie `includes/config.example.inc.php` nach `includes/config.inc.php`
+    und geben Sie Ihre lokalen Datenbankzugangsdaten ein.
 6. Projekt im Browser öffnen:
 
 http://localhost/Termin_booking_app

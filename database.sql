@@ -33,3 +33,30 @@ CREATE TABLE IF NOT EXISTS admin_users (
     role VARCHAR(50) DEFAULT 'admin',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS ordination_zeiten (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    wochentag TINYINT UNSIGNED NOT NULL,
+    start_zeit TIME NOT NULL,
+    ende_zeit TIME NOT NULL,
+    slot_dauer SMALLINT UNSIGNED NOT NULL DEFAULT 30,
+    aktiv BOOLEAN NOT NULL DEFAULT TRUE
+
+        CONSTRAINT chk_wochentag
+        CHECK (wochentag BETWEEN 1 AND 7),
+
+    CONSTRAINT chk_ordination_zeit
+        CHECK (start_zeit < ende_zeit),
+
+    CONSTRAINT chk_slot_dauer
+        CHECK (slot_dauer > 0),
+
+    UNIQUE KEY unique_ordination_zeit (
+        wochentag,
+        start_zeit,
+        ende_zeit
+    )
+); ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+
