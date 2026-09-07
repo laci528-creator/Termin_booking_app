@@ -56,6 +56,18 @@ function formatiereDatumDeutsch(string $datum): string {
     return $datumObjekt ? $datumObjekt->format('d.m.Y') : $datum;
 }
 
+function formatiereDatumDeutschLang(string $datum, array $monate_deutsch): string {
+    $dt = DateTime::createFromFormat('Y-m-d', $datum);
+    if (!$dt) {
+        return '';
+    }
+    $tag = $dt->format('j');
+    $monat = $monate_deutsch[(int)$dt->format('n')] ?? '';
+    $jahr = $dt->format('Y');
+
+    return "$tag. $monat $jahr";
+}
+
 $success_msg = '';
 
 if (isset($_SESSION['booking_success'])) {
@@ -160,28 +172,29 @@ if ($dt !== null) {
         <p>Willkommen auf unserer Terminvereinbarungsseite! Hier können Sie ganz einfach einen Termin für Ihre nächste Konsultation oder Behandlung vereinbaren. 
             Bitte wählen Sie ein Datum aus dem Kalender aus, um die verfügbaren Termine an diesem Tag zu sehen. Klicken Sie dann auf einen freien Termin, um Ihre Buchung abzuschließen. 
             Wir freuen uns darauf, Sie bald bei uns begrüßen zu dürfen!</p>
-        <div class="calender">   
-        <h2 >Kalender</h2>
+        <section class="calendar-container">   
+        <h2 >Terminkalender</h2>
                 <div>
-                    <strong><?php echo $monate_deutsch[$angezeigterMonat->format('n')] . ' ' . $angezeigterMonat->format('Y'); ?></strong>
+                    <h3><strong><?php echo $monate_deutsch[$angezeigterMonat->format('n')] . ' ' . $angezeigterMonat->format('Y'); ?></strong></h3>
                 </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <div>
+                <div class="calendar-navigation">
                     <?php if ($vorherigErlaubt): ?>
-                        <a href="?jahr=<?php echo $vorherigerMonat->format('Y'); ?>&monat=<?php echo $vorherigerMonat->format('n'); ?>">
+                        <a href="?jahr=<?= $vorherigerMonat->format('Y') ?>&monat=<?= $vorherigerMonat->format('n') ?>" class="calendar-nav-btn">
                             &laquo; Vorheriges Monat
                         </a>
+                    <?php else: ?>
+                        <span class="calendar-nav-btn disabled">&laquo; Vorheriges Monat</span>
                     <?php endif; ?>
-                </div>
-                <div>
+
                     <?php if ($naechstErlaubt): ?>
-                        <a href="?jahr=<?php echo $naechsterMonat->format('Y'); ?>&monat=<?php echo $naechsterMonat->format('n'); ?>">
-                            Nachste Monat &raquo;
+                        <a href="?jahr=<?= $naechsterMonat->format('Y') ?>&monat=<?= $naechsterMonat->format('n') ?>" class="calendar-nav-btn">
+                            Nächste Monat &raquo;
                         </a>
+                    <?php else: ?>
+                        <span class="calendar-nav-btn disabled">Nächste Monat &raquo;</span>
                     <?php endif; ?>
                 </div>
-            </div>
-            <table border="3" cellpadding="5" cellspacing="0">
+            <table class="calendar">
                 <tr>
                     <th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>So</th>
                 </tr>
@@ -219,13 +232,15 @@ if ($dt !== null) {
                     ?>
                 </tr>
             </table>
-            </div>
-            <h2>Freie Termine am <?php echo htmlspecialchars($selecteddatum); ?></h2>
+            </section>
+            <section class="appointments-container">
+            <h2>Freie Termine am <?= htmlspecialchars(formatiereDatumDeutschLang($selecteddatum, $monate_deutsch)); ?></h2>
+            <div class="termin-list">
             <?php
             
             // Überprüft, ob die Variablen $anfang_zeit und $ende_zeit gesetzt sind. 
             if ($selecteddatum === '') {
-                echo "<p>Bitte wählen Sie ein Datum aus dem Kalender aus, um die verfügbaren Termine an diesem Tag zu sehen.</p>";
+                echo "<p class='termin-empty'>Bitte wählen Sie ein Datum aus dem Kalender aus, um die verfügbaren Termine an diesem Tag zu sehen.</p>";
             } elseif (empty($ordinationZeiten)) {
                 echo "<p>Für dieses Datum sind keine Termine verfügbar.</p>";            
             }
@@ -245,10 +260,12 @@ if ($dt !== null) {
                     $istGebucht = pruefeTermin($conn, $selecteddatum, $termin);
 
                     if ($istGebucht) {
-                        echo '<span class="gebucht">Nicht buchbar</span><br>';
+                    echo '<span class="termin-slot gebucht">'
+                        . htmlspecialchars($termin)
+                        . '</span>';
                     } 
                     else {
-                        echo "<a href='?jahr=" 
+                        echo "<a class='termin-slot buchbar' href='?jahr=" 
                                 . urlencode($jahr) 
                                 . "&monat=" 
                                 . urlencode($monat) 
@@ -260,11 +277,13 @@ if ($dt !== null) {
                                 . urlencode($termin) 
                                 . "'>"
                                 . htmlspecialchars($termin)
-                                . "</a><br>";
+                                . "</a>";
                         }
                     }
                 }
             }
             ?>
+            </div>
+            </section>
 <?php require_once __DIR__ . "/includes/footer.inc.php"; ?>
 <?php $conn->close(); ?>

@@ -201,6 +201,202 @@ input[type="submit"]:hover,
     border-left: 4px solid #a94442;
 }
 
+/*--calendar--*/ 
+
+
+.calendar-container {
+    width: 100%;
+    max-width: 480px;
+
+    margin: 1.5rem auto;
+    padding: 1rem;
+
+    background-color: var(--light-green);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--bg-dark);
+}
+
+.calendar-container h2,
+.calendar-container h3  {
+    margin-top: 0rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    border-bottom: 1px solid var(--green);
+}
+
+
+.calendar {
+    width: 100%;
+    max-width: 480px;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background-color: var(--white);
+    border: 1px solid var(--light-green);
+}
+
+.calendar th,
+.calendar td {
+    width: 14.28%;
+    padding: 0.7rem;
+    text-align: center;
+    border: 1px solid var(--light-green);
+}
+
+.calendar td a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+    min-height: 48px;
+    padding: 0.35rem;
+
+    color: var(--text-dark);
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.calendar th {
+    background-color: var(--bg-dark);
+    color: var(--white);
+}
+
+.calendar td {
+    background-color: var(--white);
+}
+
+
+.calendar td:has(a):hover {
+    background-color: var(--pale-green);
+}
+
+.calendar .today {
+    background-color: var(--light-green);
+    font-weight: 700;
+}
+
+.calendar .selected,
+.calendar .selected a {
+    background-color: var(--green);
+    color: var(--white);
+    font-weight: 700;
+}
+
+.calendar .disabled {
+    color: #999;
+    background-color: #f2f2f2;
+}
+
+.calendar-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    max-width: 480px;
+    margin: 1rem 0;
+}
+
+.calendar-navigation a {
+    color: var(--green);
+    text-decoration: none;
+    padding: 1rem 1rem;
+    font-weight: 600;
+    border: 1px solid var(--bg-dark);
+    border-radius: 8px;
+    background-color: var(--pale-green);
+}
+
+.calendar-navigation span {
+    color: var(--green);
+    text-decoration: none;
+    padding: 1rem 1rem;
+    font-weight: 600;
+    border: 1px solid var(--bg-dark);
+    border-radius: 8px;
+    background-color: var(--light-bg);
+}
+
+.calendar-nav-btn {
+    flex: 1;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.calendar-nav-btn.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.calendar-navigation a:hover {
+    color: var(--bg-dark);
+    text-decoration: underline;
+}
+
+.appointments-container {
+    width: 100%;
+    max-width: 780px;
+
+    margin: 1.5rem auto;
+    padding: 1rem;
+
+    background-color: var(--light-green);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--bg-dark);
+}
+
+.appointments-container h2 {
+    margin-top: 0;
+    padding-bottom: 0.5rem;
+
+    border-bottom: 1px solid var(--green);
+}
+
+.termin-empty {
+    grid-column: 1 / -1;
+    margin: 0;
+}
+
+.termin-list {
+    display: grid;
+    grid-template-columns: repeat(4, 180px);
+    gap: 0.6rem;
+}
+
+.termin-slot {
+    width: 100%;
+    min-height: 46px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0.65rem 1rem;
+    border-radius: 6px;
+
+    text-align: center;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.buchbar {
+    background-color: var(--bg-dark);
+    color: var(--white);
+}
+
+.buchbar:hover {
+    background-color: var(--green);
+    color: var(--white);
+}
+
+
+.gebucht {
+    background-color: #d6d6d6;
+    color: #777;
+    cursor: not-allowed;
+}
+
 
 /* --- footer --- */
 
@@ -274,5 +470,26 @@ input[type="submit"]:hover,
 
     .footer-separator {
         display: none;
+    }
+
+    .calendar-container {
+        max-width: 100%;
+    }
+
+    .calendar-nav-btn {
+        white-space: normal;
+    }
+
+    .calendar th,
+    .calendar td {
+        padding: 0.5rem 0.25rem;
+    }
+
+    .calendar td a {
+        min-height: 40px;
+    }
+
+    .termin-slot {
+        flex: 1 1 140px;
     }
 }
