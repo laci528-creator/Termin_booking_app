@@ -216,7 +216,6 @@ $conn->close();
 ?>
 
     <?php require_once __DIR__ . "/includes/header.inc.php"; ?>
-	<body>
         <h1>Terminbuchung</h1>
 		<?php echo $msg; // Fehlermeldung anzeigen, falls vorhanden ?>
         <h2>Formular</h2>
@@ -259,5 +258,4 @@ $conn->close();
 		</form>
         <h1>Zurück zur Indexseite</h1>
 		<a href="index.php" class="button">Zurück zur Indexseite</a>
-	</body>
-</html>
+    <?php require_once __DIR__ . "/includes/footer.inc.php"; ?>

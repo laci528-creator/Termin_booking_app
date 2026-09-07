@@ -69,7 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
 		<?php require_once __DIR__ . "/includes/header.inc.php"; ?>
-		<body>
 			<?php echo $msg; ?>
         <h1>In den Adminbereich einloggen</h1>
 		<form method="post">
@@ -96,5 +95,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		<h1>Zurück zur Indexseite</h1>
 			<p>Wenn Sie zur Startseite zurückkehren möchten, klicken Sie bitte auf den folgenden Link:</p>
 				<a href="index.php" class="button">Zurück zur Indexseite</a>
-	</body>
-</html>
+    <?php require_once __DIR__ . "/includes/footer.inc.php"; ?>

@@ -1,36 +1,55 @@
+* {
+    box-sizing: border-box;
+}
 
 body {
-    margin: 0 auto;
+    margin: 0;
     font-family: Arial, sans-serif;
+    line-height: 1.5;
     background-color: var(--light-bg);
     color: var(--text-dark);
-	max-width: 1000px;
 }
 
 
+/* Navigation */
+
 .main-nav {
+    width: 100%;
+    background-color: var(--bg-dark);
+}
+
+.main-nav-content {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1.5rem;
-	background-color: var(--bg-dark);
-    padding: 1rem 2rem;
+
+    padding: 1rem;
 }
 
-.main-nav a {
+.main-nav-content a {
     color: var(--light-bg);
     text-decoration: none;
+    border-bottom: 2px solid transparent;
 }
-.main-nav a.active {
+
+.main-nav-content a:hover {
+    border-bottom-color: var(--pale-green);
+}
+
+.main-nav-content a.active {
     color: var(--pale-green);
-    border-bottom: 2px solid var(--pale-green);
+    border-bottom-color: var(--pale-green);
 }
 
 .brand {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    text-decoration: none;
     font-weight: 700;
 }
 
@@ -46,7 +65,7 @@ body {
 }
 
 @media (max-width: 600px) {
-    .main-nav {
+    .main-nav-content {
         flex-direction: column;
         align-items: flex-start;
     }
@@ -55,7 +74,26 @@ body {
         width: 100%;
         justify-content: space-between;
     }
+
+	.footer-text {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .footer-separator {
+        display: none;
+    }
 }
+
+
+.main-container {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem;
+}
+
+
 
 
 input,
@@ -103,3 +141,54 @@ input[type="submit"],
 	font-weight:bold;
 }
 
+
+
+/* --- footer --- */
+
+.footer {
+    width: 100%;
+    margin-top: auto;
+    padding: 16px 20px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.demo-note {
+    max-width: 800px;
+    margin: 0 auto 1rem;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.footer-text {
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+
+    margin: 0;
+}
+
+.portfolio-link {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+
+    margin-top: 6px;
+
+    color: #2f80ed;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.portfolio-link:hover {
+    text-decoration: underline;
+}

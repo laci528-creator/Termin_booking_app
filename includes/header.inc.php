@@ -26,7 +26,7 @@ $actualPageTitle = $pageTitles[$currentPage] ?? 'Terminbuchung';
 <body>
 
 <nav class="main-nav">
-
+    <div class="main-nav-content">
     <a href="index.php" class="brand">
         <img src="img/logo.png" alt="Terminbuchung Logo">
         <span>Terminbuchung-App</span>
@@ -47,5 +47,7 @@ $actualPageTitle = $pageTitles[$currentPage] ?? 'Terminbuchung';
             Admin Login
         </a>
     </div>
+</div>
 
 </nav>
+<main class="main-container">

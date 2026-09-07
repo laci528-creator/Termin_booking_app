@@ -68,7 +68,9 @@ $gefragtedatum = $_SESSION["date"] ?? '';
 $terminCount = 0;
 
 ?>
+
 <?php require_once __DIR__ . "/includes/header.inc.php"; ?>
+
 <h1>Gebuchte Termine <br> von <?php echo htmlspecialchars($gefragtedatum, ENT_QUOTES, 'UTF-8');?> und naechste zwei woche</h1>
         <form method="post">
             <input type="hidden" name="form_type" value="datum_andern">
@@ -155,6 +157,5 @@ foreach($alledate as $datum) {
             <input type="hidden" name="form_type" value="logout">
 		    <button type="submit">Ausloggen</button>
 </form>
-    </body>
-</html>
+    <?php require_once __DIR__ . "/includes/footer.inc.php"; ?>
 <?php $conn->close(); ?>
