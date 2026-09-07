@@ -155,7 +155,6 @@ if ($dt !== null) {
 ?>
 
         <?php require_once __DIR__ . "/includes/header.inc.php"; ?>
-        <main class="main-container">
         <h1>Terminvereinbarung</h1>
         <?php echo $success_msg; ?>
         <p>Willkommen auf unserer Terminvereinbarungsseite! Hier können Sie ganz einfach einen Termin für Ihre nächste Konsultation oder Behandlung vereinbaren. 
@@ -267,8 +266,5 @@ if ($dt !== null) {
                 }
             }
             ?>
-        <h2>Adminbereich</h2>
-            <p>Um die Admin-Seite zu betreten, klicken Sie bitte auf den folgenden Link:</p>
-                <a href="einloggen.php">Admin-Seite betreten</a>
 <?php require_once __DIR__ . "/includes/footer.inc.php"; ?>
 <?php $conn->close(); ?>

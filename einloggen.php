@@ -91,8 +91,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <li><strong>Passwort: </strong>test12345678</li>
             </ul>
                 <p>Geben Sie diese Anmeldedaten in das Formular ein, um sich erfolgreich einzuloggen und Zugriff auf die geschützte Admin-Seite zu erhalten.</p>
-
-		<h1>Zurück zur Indexseite</h1>
-			<p>Wenn Sie zur Startseite zurückkehren möchten, klicken Sie bitte auf den folgenden Link:</p>
-				<a href="index.php" class="button">Zurück zur Indexseite</a>
     <?php require_once __DIR__ . "/includes/footer.inc.php"; ?>

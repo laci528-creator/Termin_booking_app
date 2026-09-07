@@ -50,4 +50,5 @@ $actualPageTitle = $pageTitles[$currentPage] ?? 'Terminbuchung';
 </div>
 
 </nav>
-<main class="main-container">
+<main class="main-area">
+<div class="main-container">
