@@ -13,16 +13,14 @@ if (!empty($_SESSION["eingeloggt"])) {
     exit;
 }
 
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	
-		$conn = dbConnect();
-
 		$email = trim($_POST["E"] ?? '');
 		$pwd = $_POST["P"] ?? '';
-		$datum = $_POST["D"] ?? '';
 
-		if ($email !== '' && $pwd !== '' && $datum !== '') {
+		if ($email !== '' && $pwd !== '') {
+
+			$conn = dbConnect();
 		
 			$sql = "SELECT * FROM admin_users WHERE email = ? LIMIT 1";
 			$stmt = $conn->prepare($sql);
@@ -41,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 					session_regenerate_id(true);
 
 					$_SESSION["eingeloggt"] = true;
-					$_SESSION["date"] = $datum;
+					$_SESSION['date'] = date('Y-m-d');
 					$_SESSION["admin_email"] = $user['email'];
 					$_SESSION["admin_id"] = $user['id'];
 					$_SESSION["admin_name"] = $user['name'];
@@ -58,30 +56,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			$msg = '<p class="error">Leider waren die eingegebenen Daten nicht korrekt. Bitte versuchen Sie es erneut.</p>';
 		}
 		$stmt->close();
-		
-
 		} else {
-				error_log("Login SQL error: " . $conn->error);
+			error_log("Login SQL error: " . $conn->error);
 
-				$msg = '<p class="error">
-					Fehler bei der Datenbankabfrage.
-				</p>';
+			$msg = '<p class="error">Fehler bei der Datenbankabfrage.</p>';
 		}
-
 		$conn->close();
-
 	} else {
 		$msg = '<p class="error">Bitte füllen Sie alle Felder aus.</p>';
-		$conn->close();
 	}
 }
-
-
-
-
-
-
 ?>
+
 <!doctype html>
 <html lang="de">
 	<head>
@@ -96,22 +82,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		<form method="post">
 			<label>
 				Emailadresse:
-				<input type="email" name="E" required>
+				<input type="email" name="E" autocomplete="username" required>
 			</label>
 			<label>
 				Passwort:
-				<input type="password" name="P" required>
+				<input type="password" name="P" autocomplete="current-password" required>
 			</label>
             <br>
-            <label>
-                Startdatum für die nächsten zwei Wochen:
-                <input type="date" name="D" required>
-			</label>
 			<input type="submit" value="Einloggen">
 		</form>
 
         <h3>Hinweise zur Anmeldung</h3>
-            <p>Die Anmeldung ist mit einem festen Benutzernamen  und Passwort geschützt. Bitte verwenden Sie die folgenden Anmeldedaten, um Zugriff auf die Admin-Seite zu erhalten:</p>
+            <p>Die Anmeldung ist mit einer festen E-Mail-Adresse und einem Passwort geschützt.. Bitte verwenden Sie die folgenden Anmeldedaten, um Zugriff auf die Admin-Seite zu erhalten:</p>
             <ul>
                 <li><strong>Emailadresse: </strong>drjackbauer@beispielklinik.at</li>
                 <li><strong>Passwort: </strong>test12345678</li>
