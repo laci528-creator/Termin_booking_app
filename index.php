@@ -153,16 +153,8 @@ if ($dt !== null) {
 }
 
 ?>
-<!doctype html>
-<html lang="de">
-	<head>
-		<title>Terminvereinbarung</title>
-		<meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/dark.css">
-        <link rel="stylesheet" href="css/common.css">
-	</head>
-	<body>
+
+        <?php require_once __DIR__ . "/includes/header.inc.php"; ?>
         <h1>Terminvereinbarung</h1>
         <?php echo $success_msg; ?>
         <p>Willkommen auf unserer Terminvereinbarungsseite! Hier können Sie ganz einfach einen Termin für Ihre nächste Konsultation oder Behandlung vereinbaren. 

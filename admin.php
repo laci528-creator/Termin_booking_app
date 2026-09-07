@@ -68,52 +68,7 @@ $gefragtedatum = $_SESSION["date"] ?? '';
 $terminCount = 0;
 
 ?>
-<!doctype html>
-<html lang="de">
-	<head>
-		<title>Gebuchte Termine</title>
-		<meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/dark.css">
-        <link rel="stylesheet" href="css/common.css">
-        <style>
-            body {
-                max-width: 1400px;
-            }
-            .table-wrapper {
-                width: 100%;
-                max-width: 100%;
-                overflow-x: auto;
-            }
-            table {
-                width: 100%;
-                min-width: 1100px;
-                border-collapse: collapse;
-            }
-            td input {
-                width: 150px;
-                box-sizing: border-box;
-            }
-            td input[name^="name"] {
-                width: 195px;
-            }
-
-            td input[name^="email"] {
-                width: 210px;
-            }
-            th:nth-of-type(4) {
-                width: 200px;
-            }
-            th:nth-of-type(6) {
-                width: 215px;
-            }
-            th:nth-of-type(7), th:nth-of-type(8) {
-                width: 90px;
-            }
-</style>
-            
-	</head>
-	<body>
+<?php require_once __DIR__ . "/includes/header.inc.php"; ?>
 <h1>Gebuchte Termine <br> von <?php echo htmlspecialchars($gefragtedatum, ENT_QUOTES, 'UTF-8');?> und naechste zwei woche</h1>
         <form method="post">
             <input type="hidden" name="form_type" value="datum_andern">

@@ -34,3 +34,78 @@ td input {
     width: 100%;
     box-sizing: border-box;
 }
+
+/*--nav--*/
+
+.main-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.brand img {
+    width: 32px;
+    height: 32px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+}
+
+@media (max-width: 600px) {
+    .main-nav {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .nav-links {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+
+            body {
+                max-width: 1000px;
+            }
+            .table-wrapper {
+                width: 100%;
+                max-width: 100%;
+                overflow-x: auto;
+            }
+            table {
+                width: 100%;
+                min-width: 1100px;
+                border-collapse: collapse;
+            }
+            td input {
+                width: 150px;
+                box-sizing: border-box;
+            }
+            td input[name^="name"] {
+                width: 195px;
+            }
+
+            td input[name^="email"] {
+                width: 210px;
+            }
+            th:nth-of-type(4) {
+                width: 200px;
+            }
+            th:nth-of-type(6) {
+                width: 215px;
+            }
+            th:nth-of-type(7), th:nth-of-type(8) {
+                width: 90px;
+            }
