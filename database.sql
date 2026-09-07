@@ -40,9 +40,9 @@ CREATE TABLE IF NOT EXISTS ordination_zeiten (
     start_zeit TIME NOT NULL,
     ende_zeit TIME NOT NULL,
     slot_dauer SMALLINT UNSIGNED NOT NULL DEFAULT 30,
-    aktiv BOOLEAN NOT NULL DEFAULT TRUE
+    aktiv BOOLEAN NOT NULL DEFAULT TRUE,
 
-        CONSTRAINT chk_wochentag
+    CONSTRAINT chk_wochentag
         CHECK (wochentag BETWEEN 1 AND 7),
 
     CONSTRAINT chk_ordination_zeit
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS ordination_zeiten (
         start_zeit,
         ende_zeit
     )
-); ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 
