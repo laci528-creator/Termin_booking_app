@@ -218,7 +218,7 @@ $conn->close();
 <!doctype html>
 <html lang="de">
 	<head>
-		<title>DB: INSERT</title>
+		<title>Termin buchen</title>
 		<meta charset="utf-8">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/dark.css">
 		<link rel="stylesheet" href="css/common.css">
@@ -232,15 +232,15 @@ $conn->close();
 				<legend>Personaldaten</legend>
                 <label>
 					Name:
-					<input type="text" name="NN" required>
+					<input type="text" name="NN" value="<?= htmlspecialchars($nachname ?? '') ?>" required>
 				</label>
                 <label>
                     Telefonnummer:
-                    <input type="tel" name="TN" required>
+                    <input type="tel" name="TN" value="<?= htmlspecialchars($telefon ?? '') ?>" required>
                 </label>
                     <label>
                         Emailadresse:
-					<input type="email" name="E" required>
+					<input type="email" name="E" value="<?= htmlspecialchars($email ?? '') ?>" required>
 				</label>
 			</fieldset>
 			<fieldset>
@@ -259,7 +259,7 @@ $conn->close();
 				</label>
                 <label>
                     Bemerkung für den Arzt:
-                    <textarea name="T" rows="4" cols="50"></textarea>
+                    <textarea name="T" rows="4" cols="50"><?= htmlspecialchars($bemerkung ?? '') ?></textarea>
                 </label>
 			</fieldset>
 			<input type="submit" value="Termin buchen">
