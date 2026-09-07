@@ -71,6 +71,7 @@ function updateTermin($conn, int $termin_id): string {
         $name = $_POST['name'][$termin_id] ?? '';
         $telefon = $_POST['telefon'][$termin_id] ?? '';
         $email = $_POST['email'][$termin_id] ?? '';
+        $bemerkung = $_POST['bemerkung'][$termin_id] ?? '';
 
         $terminStatus = pruefeTermin($conn, $datum, $anfang_zeit, $termin_id);
         if ($terminStatus === true) {
@@ -81,6 +82,7 @@ function updateTermin($conn, int $termin_id): string {
                 SET gespeicherte_termin.datum = '" . $conn->real_escape_string($datum) . "',
                     gespeicherte_termin.anfang_zeit = '" . $conn->real_escape_string($anfang_zeit) . "',
                     gespeicherte_termin.ende_zeit = '" . $conn->real_escape_string($ende_zeit) . "',
+                    gespeicherte_termin.bemerkung = '" . $conn->real_escape_string($bemerkung) . "',
                     kunden.name = '" . $conn->real_escape_string($name) . "',
                     kunden.telefon = '" . $conn->real_escape_string($telefon) . "',
                     kunden.email = '" . $conn->real_escape_string($email) . "'
@@ -199,12 +201,13 @@ $terminCount = 0;
             <th>Name</th>
             <th>Telefon</th>
             <th>Email</th>
+            <th>Bemerkung</th>
             <th>Delete</th>
             <th>Update</th>
         </tr>   
 <?php
 if ($gefragtedatum === '') {
-    echo '<tr><td colspan="8" class="error">Kein Startdatum in der Sitzung gefunden.</td></tr>';
+    echo '<tr><td colspan="9" class="error">Kein Startdatum in der Sitzung gefunden.</td></tr>';
 }
 else {
 $alledate = zweiWochenDaten($gefragtedatum);
@@ -217,6 +220,7 @@ foreach($alledate as $datum) {
                         gespeicherte_termin.datum, 
                         gespeicherte_termin.anfang_zeit, 
                         gespeicherte_termin.ende_zeit,
+                        gespeicherte_termin.bemerkung,
                         kunden.name,
                         kunden.telefon,
                         kunden.email
@@ -240,13 +244,14 @@ foreach($alledate as $datum) {
                 echo "<td><input type='text' value='" . htmlspecialchars($data->name, ENT_QUOTES, 'UTF-8') . "' name='name[" . $id_termin . "]'></td>";
                 echo "<td><input type='text' value='" . htmlspecialchars($data->telefon, ENT_QUOTES, 'UTF-8') . "' name='telefon[" . $id_termin . "]'></td>";
                 echo "<td><input type='text' value='" . htmlspecialchars($data->email, ENT_QUOTES, 'UTF-8') . "' name='email[" . $id_termin . "]'></td>";
+                echo "<td><input type='text' value='" . htmlspecialchars($data->bemerkung ?? '', ENT_QUOTES, 'UTF-8') . "' name='bemerkung[" . $id_termin . "]'></td>";
                 echo "<td><button type='submit' name='delete' value='" . $id_termin . "'>X</button></td>";
                 echo "<td><button type='submit' name='update' value='" . $id_termin . "'>Upd</button></td>";
                 echo "</tr>";
             }
         }
         if ($terminCount === 0) {
-            echo '<tr><td colspan="8">Keine Termine gefunden.</td></tr>';
+            echo '<tr><td colspan="9">Keine Termine gefunden.</td></tr>';
         }   
 }
 ?>
