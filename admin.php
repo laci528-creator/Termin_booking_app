@@ -216,7 +216,6 @@ $alledate = zweiWochenDaten($gefragtedatum);
 foreach($alledate as $datum) {
             $sql = "SELECT 
                         gespeicherte_termin.id,
-                        gespeicherte_termin.kunden_id,
                         gespeicherte_termin.datum, 
                         gespeicherte_termin.anfang_zeit, 
                         gespeicherte_termin.ende_zeit,
@@ -236,7 +235,6 @@ foreach($alledate as $datum) {
                 $terminCount++;
 
                 $id_termin = $data->id;
-                $id_kunden = $data->kunden_id;
                 echo "<tr>";
                 echo "<td><input type='text' value='" . htmlspecialchars($data->datum, ENT_QUOTES, 'UTF-8') . "' name='datum[" . $id_termin . "]'></td>";
                 echo "<td><input type='text' value='" . htmlspecialchars($data->anfang_zeit, ENT_QUOTES, 'UTF-8') . "' name='anfang_zeit[" . $id_termin . "]'></td>";
