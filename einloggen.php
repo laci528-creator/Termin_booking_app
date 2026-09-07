@@ -13,18 +13,22 @@ if (!empty($_SESSION["eingeloggt"])) {
     exit;
 }
 
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	
 		$conn = dbConnect();
+
 		$email = trim($_POST["E"] ?? '');
-		$pwd = trim($_POST["P"] ?? '');
+		$pwd = $_POST["P"] ?? '';
 		$datum = $_POST["D"] ?? '';
 
-		if (empty($email) || empty($pwd) || empty($datum)) {
-			$msg = '<p class="error">Bitte füllen Sie alle Felder aus.</p>';
-		} else {
+		if ($email !== '' && $pwd !== '' && $datum !== '') {
+		
 			$sql = "SELECT * FROM admin_users WHERE email = ? LIMIT 1";
 			$stmt = $conn->prepare($sql);
+
+			if ($stmt) {
+
 			$stmt->bind_param("s", $email);
 			$stmt->execute();
 			$result = $stmt->get_result();
@@ -33,6 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 					$user = $result->fetch_assoc();
 
 					if (password_verify($pwd, $user['password_hash'])) {
+
+					session_regenerate_id(true);
+
 					$_SESSION["eingeloggt"] = true;
 					$_SESSION["date"] = $datum;
 					$_SESSION["admin_email"] = $user['email'];
@@ -51,15 +58,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			$msg = '<p class="error">Leider waren die eingegebenen Daten nicht korrekt. Bitte versuchen Sie es erneut.</p>';
 		}
 		$stmt->close();
+		
+
+		} else {
+				error_log("Login SQL error: " . $conn->error);
+
+				$msg = '<p class="error">
+					Fehler bei der Datenbankabfrage.
+				</p>';
+		}
+
+		$conn->close();
+
+	} else {
+		$msg = '<p class="error">Bitte füllen Sie alle Felder aus.</p>';
 		$conn->close();
 	}
 }
+
+
+
+
+
+
 ?>
 <!doctype html>
 <html lang="de">
 	<head>
 		<title>Login</title>
 		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/dark.css">
 	</head>
 		<body>
