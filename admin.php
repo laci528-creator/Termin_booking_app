@@ -1,10 +1,10 @@
 <?php
 
-require("includes/config.inc.php");
-require("includes/common.inc.php");
-require("includes/db.inc.php");
-require("includes/termin_functions.inc.php");
-require("includes/admin_functions.inc.php");
+require_once __DIR__ . "includes/config.inc.php";
+require_once __DIR__ . "includes/common.inc.php";
+require_once __DIR__ . "includes/db.inc.php";
+require_once __DIR__ . "includes/termin_functions.inc.php";
+require_once __DIR__ . "includes/admin_functions.inc.php";
 
 $conn = dbConnect();
 session_start();
