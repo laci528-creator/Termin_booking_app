@@ -1,10 +1,10 @@
 <?php
 
-require_once __DIR__ . "includes/config.inc.php";
-require_once __DIR__ . "includes/common.inc.php";
-require_once __DIR__ . "includes/db.inc.php";
-require_once __DIR__ . "includes/termin_functions.inc.php";
-require_once __DIR__ . "includes/admin_functions.inc.php";
+require_once __DIR__ . "/includes/config.inc.php";
+require_once __DIR__ . "/includes/common.inc.php";
+require_once __DIR__ . "/includes/db.inc.php";
+require_once __DIR__ . "/includes/termin_functions.inc.php";
+require_once __DIR__ . "/includes/admin_functions.inc.php";
 
 $conn = dbConnect();
 session_start();
@@ -50,7 +50,16 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             elseif (isset($_POST['update'])) {
                 $termin_id = (int)$_POST['update'];
-                $msg = updateTermin($conn, $termin_id);
+                $msg = updateTermin(    
+                    $conn,
+                    $termin_id,
+                    $_POST['datum'][$termin_id] ?? '',
+                    $_POST['anfang_zeit'][$termin_id] ?? '',
+                    $_POST['name'][$termin_id] ?? '',
+                    $_POST['telefon'][$termin_id] ?? '',
+                    $_POST['email'][$termin_id] ?? '',
+                    $_POST['bemerkung'][$termin_id] ?? ''
+                );
             }
         }
 }

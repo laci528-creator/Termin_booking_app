@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . "/termin_functions.inc.php";
 
 function zweiWochenDaten(string $startdatum): array {
     $daten = [];
@@ -46,14 +47,16 @@ function deleteTermin($conn, int $termin_id): string {
 }
 
 
-function updateTermin($conn, int $termin_id): string {
-        $datum = $_POST['datum'][$termin_id] ?? '';
-        $anfang_zeit = $_POST['anfang_zeit'][$termin_id] ?? '';
-
-        $name = $_POST['name'][$termin_id] ?? '';
-        $telefon = $_POST['telefon'][$termin_id] ?? '';
-        $email = $_POST['email'][$termin_id] ?? '';
-        $bemerkung = $_POST['bemerkung'][$termin_id] ?? '';
+function updateTermin(    
+            mysqli $conn,
+            int $termin_id,
+            string $datum,
+            string $anfang_zeit,
+            string $name,
+            string $telefon,
+            string $email,
+            string $bemerkung
+        ): string {
 
         $terminSlot = findeTerminSlot(
             $conn,

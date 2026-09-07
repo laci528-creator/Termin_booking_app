@@ -1,13 +1,12 @@
 <?php
 
-require_once __DIR__ . "includes/config.inc.php";
-require_once __DIR__ . "includes/common.inc.php";
-require_once __DIR__ . "includes/db.inc.php";
-require_once __DIR__ . "includes/termin_functions.inc.php";
+require_once __DIR__ . "/includes/config.inc.php";
+require_once __DIR__ . "/includes/common.inc.php";
+require_once __DIR__ . "/includes/db.inc.php";
+require_once __DIR__ . "/includes/termin_functions.inc.php";
 
 session_start();
 $conn = dbConnect();
-
 
 function termingenerator(string $anfang_zeit, string $ende_zeit, int $intervall): array { 
     if ($intervall <= 0) {
