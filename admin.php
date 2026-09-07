@@ -64,19 +64,36 @@ function deleteTermin($conn, int $termin_id): string {
         return "<p class='error'>Fehler beim Löschen des Termins: " . $conn->error . "</p>";
 }
 
+
 function updateTermin($conn, int $termin_id): string {
         $datum = $_POST['datum'][$termin_id] ?? '';
         $anfang_zeit = $_POST['anfang_zeit'][$termin_id] ?? '';
-        $ende_zeit = $_POST['ende_zeit'][$termin_id] ?? '';
+
         $name = $_POST['name'][$termin_id] ?? '';
         $telefon = $_POST['telefon'][$termin_id] ?? '';
         $email = $_POST['email'][$termin_id] ?? '';
         $bemerkung = $_POST['bemerkung'][$termin_id] ?? '';
 
+        $terminSlot = findeTerminSlot(
+            $conn,
+            $datum,
+            $anfang_zeit
+        );
+
+        if ($terminSlot === null) {
+            return "<p class='error'>
+                Der gewählte Termin liegt außerhalb der Ordinationszeiten
+                oder ist kein gültiger Termin-Slot.
+            </p>";
+        }
+
+        $ende_zeit = $terminSlot["ende_zeit"];
+
         $terminStatus = pruefeTermin($conn, $datum, $anfang_zeit, $termin_id);
         if ($terminStatus === true) {
             return "<p class='error'>Der Termin ist bereits gebucht. Bitte wählen Sie einen anderen Termin.</p>";
         }
+
         $sql = "UPDATE gespeicherte_termin
                 JOIN kunden ON gespeicherte_termin.kunden_id = kunden.id
                 SET gespeicherte_termin.datum = '" . $conn->real_escape_string($datum) . "',
@@ -238,7 +255,7 @@ foreach($alledate as $datum) {
                 echo "<tr>";
                 echo "<td><input type='text' value='" . htmlspecialchars($data->datum, ENT_QUOTES, 'UTF-8') . "' name='datum[" . $id_termin . "]'></td>";
                 echo "<td><input type='text' value='" . htmlspecialchars($data->anfang_zeit, ENT_QUOTES, 'UTF-8') . "' name='anfang_zeit[" . $id_termin . "]'></td>";
-                echo "<td><input type='text' value='" . htmlspecialchars($data->ende_zeit, ENT_QUOTES, 'UTF-8') . "' name='ende_zeit[" . $id_termin . "]'></td>";
+                echo "<td>" . htmlspecialchars($data->ende_zeit, ENT_QUOTES, 'UTF-8') . "</td>";
                 echo "<td><input type='text' value='" . htmlspecialchars($data->name, ENT_QUOTES, 'UTF-8') . "' name='name[" . $id_termin . "]'></td>";
                 echo "<td><input type='text' value='" . htmlspecialchars($data->telefon, ENT_QUOTES, 'UTF-8') . "' name='telefon[" . $id_termin . "]'></td>";
                 echo "<td><input type='text' value='" . htmlspecialchars($data->email, ENT_QUOTES, 'UTF-8') . "' name='email[" . $id_termin . "]'></td>";
