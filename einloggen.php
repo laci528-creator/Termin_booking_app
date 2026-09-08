@@ -67,8 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	}
 }
 ?>
-
-		<?php require_once __DIR__ . "/includes/header.inc.php"; ?>
+	<?php require_once __DIR__ . "/includes/header.inc.php"; ?>
 			<?php echo $msg; ?>
         <h1>In den Adminbereich einloggen</h1>
 		<section class="login-form-container">

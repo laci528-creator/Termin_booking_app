@@ -5,6 +5,7 @@ require_once __DIR__ . "/includes/common.inc.php";
 require_once __DIR__ . "/includes/db.inc.php";
 require_once __DIR__ . "/includes/termin_functions.inc.php";
 require_once __DIR__ . "/includes/admin_functions.inc.php";
+require_once __DIR__ . "/includes/date_functions.inc.php";
 
 $conn = dbConnect();
 session_start();
@@ -71,7 +72,11 @@ $terminCount = 0;
 
 <?php require_once __DIR__ . "/includes/header.inc.php"; ?>
 
-<h3>Gebuchte Termine ab dem <?php echo htmlspecialchars($gefragtedatum, ENT_QUOTES, 'UTF-8');?> für die naechste zwei woche</h3>
+<h3>Gebuchte Termine ab dem     <?= htmlspecialchars(
+                                        formatiereDatumDeutsch($gefragtedatum),
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?> für die naechste zwei woche</h3>
         <form method="post">
             <input type="hidden" name="form_type" value="datum_andern">
             <label>

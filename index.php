@@ -4,6 +4,7 @@ require_once __DIR__ . "/includes/config.inc.php";
 require_once __DIR__ . "/includes/common.inc.php";
 require_once __DIR__ . "/includes/db.inc.php";
 require_once __DIR__ . "/includes/termin_functions.inc.php";
+require_once __DIR__ . "/includes/date_functions.inc.php";
 
 session_start();
 $conn = dbConnect();
@@ -34,38 +35,6 @@ if (isset($_GET['book_datum'], $_GET['book_termin'])) {
 
     header("Location: formular.php");
     exit;
-}
-
-$monate_deutsch = [
-    1 => 'Januar',
-    2 => 'Februar',
-    3 => 'März',
-    4 => 'April',
-    5 => 'Mai',
-    6 => 'Juni',
-    7 => 'Juli',
-    8 => 'August',
-    9 => 'September',
-    10 => 'Oktober',
-    11 => 'November',
-    12 => 'Dezember'
-];
-
-function formatiereDatumDeutsch(string $datum): string {
-    $datumObjekt = DateTime::createFromFormat('Y-m-d', $datum);
-    return $datumObjekt ? $datumObjekt->format('d.m.Y') : $datum;
-}
-
-function formatiereDatumDeutschLang(string $datum, array $monate_deutsch): string {
-    $dt = DateTime::createFromFormat('Y-m-d', $datum);
-    if (!$dt) {
-        return '';
-    }
-    $tag = $dt->format('j');
-    $monat = $monate_deutsch[(int)$dt->format('n')] ?? '';
-    $jahr = $dt->format('Y');
-
-    return "$tag. $monat $jahr";
 }
 
 $success_msg = '';
@@ -164,6 +133,7 @@ if ($dt !== null) {
     $stmt->close();
 }
 
+
 ?>
 
         <?php require_once __DIR__ . "/includes/header.inc.php"; ?>
@@ -175,23 +145,27 @@ if ($dt !== null) {
         <section class="calendar-container">   
         <h2 >Terminkalender</h2>
                 <div>
-                    <h3><strong><?php echo $monate_deutsch[$angezeigterMonat->format('n')] . ' ' . $angezeigterMonat->format('Y'); ?></strong></h3>
+                    <h3><strong><?= htmlspecialchars(
+                            formatiereMonatJahrDeutsch($angezeigterMonat),
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?></strong></h3>
                 </div>
                 <div class="calendar-navigation">
                     <?php if ($vorherigErlaubt): ?>
                         <a href="?jahr=<?= $vorherigerMonat->format('Y') ?>&monat=<?= $vorherigerMonat->format('n') ?>" class="calendar-nav-btn">
-                            &laquo; Vorheriges Monat
+                            &laquo; Vorheriger Monat
                         </a>
                     <?php else: ?>
-                        <span class="calendar-nav-btn disabled">&laquo; Vorheriges Monat</span>
+                        <span class="calendar-nav-btn disabled">&laquo; Vorheriger Monat</span>
                     <?php endif; ?>
 
                     <?php if ($naechstErlaubt): ?>
                         <a href="?jahr=<?= $naechsterMonat->format('Y') ?>&monat=<?= $naechsterMonat->format('n') ?>" class="calendar-nav-btn">
-                            Nächste Monat &raquo;
+                            Nächster Monat &raquo;
                         </a>
                     <?php else: ?>
-                        <span class="calendar-nav-btn disabled">Nächste Monat &raquo;</span>
+                        <span class="calendar-nav-btn disabled">Nächster Monat &raquo;</span>
                     <?php endif; ?>
                 </div>
             <table class="calendar">
@@ -234,19 +208,20 @@ if ($dt !== null) {
             </table>
             </section>
             <section class="appointments-container">
-            <h2>Freie Termine am <?= htmlspecialchars(formatiereDatumDeutschLang($selecteddatum, $monate_deutsch)); ?></h2>
-            <div class="termin-list">
-            <?php
-            
-            // Überprüft, ob die Variablen $anfang_zeit und $ende_zeit gesetzt sind. 
-            if ($selecteddatum === '') {
-                echo "<p class='termin-empty'>Bitte wählen Sie ein Datum aus dem Kalender aus, um die verfügbaren Termine an diesem Tag zu sehen.</p>";
-            } elseif (empty($ordinationZeiten)) {
-                echo "<p>Für dieses Datum sind keine Termine verfügbar.</p>";            
-            }
-            else {
+                <?php if ($selecteddatum): ?>
+
+                    <h2>
+                        Freie Termine am
+                        <?= htmlspecialchars(
+                            formatiereDatumDeutschLang($selecteddatum),
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
+                    </h2>
+
+        <div class="termin-list">
                 
-                    foreach ($ordinationZeiten as $ordinationZeit) {
+           <?php foreach ($ordinationZeiten as $ordinationZeit) {
             
             $alles = termingenerator(
                 $selecteddatum . " " . $ordinationZeit["start_zeit"], 
@@ -281,9 +256,21 @@ if ($dt !== null) {
                         }
                     }
                 }
-            }
             ?>
+
+
             </div>
+                <?php else: ?>
+
+                    <h2>Freie Termine</h2>
+
+                    <p class="termin-empty">
+                        Bitte wählen Sie ein Datum aus dem Kalender aus,
+                        um die verfügbaren Termine an diesem Tag zu sehen.
+                    </p>
+
+                <?php endif; ?>
+
             </section>
 <?php require_once __DIR__ . "/includes/footer.inc.php"; ?>
 <?php $conn->close(); ?>

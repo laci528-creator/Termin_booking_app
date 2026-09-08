@@ -366,6 +366,7 @@ input[type="submit"]:hover,
 
 .termin-empty {
     margin: 0;
+
 }
 
 .termin-list {
@@ -466,6 +467,7 @@ input[type="submit"]:hover,
     padding: 0.4rem 0rem;
     border: 1px solid var(--bg-dark);
     text-align: center;
+    vertical-align: middle;
 }
 
 .admin-table th {
@@ -477,6 +479,7 @@ input[type="submit"]:hover,
 .admin-table input {
     width: 100%;
     min-width: 0;
+    margin-top: 0;
     padding: 0.5rem 0.1rem;
     background-color: var(--light-green);
 }
