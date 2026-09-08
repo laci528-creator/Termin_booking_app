@@ -7,6 +7,7 @@ body {
     font-family: Arial, sans-serif;
     line-height: 1.5;
     background-color: var(--light-bg);
+    background-image: url("../img/low-contrast-linen.png");
     color: var(--text-dark);
 
     min-height: 100vh;
@@ -427,6 +428,7 @@ input[type="submit"]:hover,
 
     background-color: var(--light-green);
     border-radius: 8px;
+    box-shadow: 0 2px 8px var(--bg-dark);
 }
 
 .login-form-container form {
