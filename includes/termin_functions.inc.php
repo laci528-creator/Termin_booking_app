@@ -1,4 +1,24 @@
 <?php 
+
+function generiereTerminSlots(string $anfang_zeit, string $ende_zeit, int $intervall): array { 
+    if ($intervall <= 0) {
+        throw new InvalidArgumentException('die Intervallzeit muss größer als 0 sein.');
+    }
+
+    $start = new DateTime($anfang_zeit);
+    $end = new DateTime($ende_zeit);
+    $step = new DateInterval('PT' . $intervall . 'M');
+
+    $termine = [];
+
+    while ($start < $end) {
+        $termine[] = $start->format('H:i:s');
+        $start->add($step);
+    }
+
+    return $termine;
+}
+
 function pruefeTermin(mysqli $conn, string $datum, string $anfang_zeit, ?int $excludeId = null): bool
 {
     if ($excludeId === null) {

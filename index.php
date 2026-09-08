@@ -9,24 +9,7 @@ require_once __DIR__ . "/includes/date_functions.inc.php";
 session_start();
 $conn = dbConnect();
 
-function termingenerator(string $anfang_zeit, string $ende_zeit, int $intervall): array { 
-    if ($intervall <= 0) {
-        throw new InvalidArgumentException('die Intervallzeit muss größer als 0 sein.');
-    }
 
-    $start = new DateTime($anfang_zeit);
-    $end = new DateTime($ende_zeit);
-    $step = new DateInterval('PT' . $intervall . 'M');
-
-    $termine = [];
-
-    while ($start < $end) {
-        $termine[] = $start->format('H:i:s');
-        $start->add($step);
-    }
-
-    return $termine;
-}
 // anfrage mysql, ob der Termin schon gebucht ist oder nicht; 
 
 if (isset($_GET['book_datum'], $_GET['book_termin'])) {
@@ -133,7 +116,6 @@ if ($dt !== null) {
     $stmt->close();
 }
 
-
 ?>
 
         <?php require_once __DIR__ . "/includes/header.inc.php"; ?>
@@ -223,7 +205,7 @@ if ($dt !== null) {
                 
            <?php foreach ($ordinationZeiten as $ordinationZeit) {
             
-            $alles = termingenerator(
+            $alles = generiereTerminSlots(
                 $selecteddatum . " " . $ordinationZeit["start_zeit"], 
                 $selecteddatum . " " . $ordinationZeit["ende_zeit"], 
                 (int)$ordinationZeit["slot_dauer"]
