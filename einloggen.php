@@ -71,6 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		<?php require_once __DIR__ . "/includes/header.inc.php"; ?>
 			<?php echo $msg; ?>
         <h1>In den Adminbereich einloggen</h1>
+		<section class="login-form-container">
 		<form method="post">
 			<label>
 				Emailadresse:
@@ -83,7 +84,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <br>
 			<input type="submit" value="Einloggen">
 		</form>
-
+		</section>
+		<section class="login-info">
         <h3>Hinweise zur Anmeldung</h3>
             <p>Die Anmeldung ist mit einer festen E-Mail-Adresse und einem Passwort geschützt.. Bitte verwenden Sie die folgenden Anmeldedaten, um Zugriff auf die Admin-Seite zu erhalten:</p>
             <ul>
@@ -91,4 +93,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <li><strong>Passwort: </strong>test12345678</li>
             </ul>
                 <p>Geben Sie diese Anmeldedaten in das Formular ein, um sich erfolgreich einzuloggen und Zugriff auf die geschützte Admin-Seite zu erhalten.</p>
+		</section>
     <?php require_once __DIR__ . "/includes/footer.inc.php"; ?>

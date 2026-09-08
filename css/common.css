@@ -168,19 +168,25 @@ input[type="submit"],
     border-radius: 6px;
 
     background-color: var(--green);
-    color: var(--white);
+    color: var(--bg-dark);
 
     font: inherit;
     font-weight: 600;
     text-decoration: none;
 
     cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+
 }
 
 button:hover,
 input[type="submit"]:hover,
 .button:hover {
+    color: var(--light-bg);
     background-color: var(--bg-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(68, 86, 81, 0.25);
+
 }
 
 .success,
@@ -227,7 +233,6 @@ input[type="submit"]:hover,
 
 .calendar {
     width: 100%;
-    max-width: 480px;
     border-collapse: collapse;
     margin-top: 1rem;
     background-color: var(--white);
@@ -293,7 +298,7 @@ input[type="submit"]:hover,
     justify-content: space-between;
     align-items: center;
     gap: 0.5rem;
-    max-width: 480px;
+    width: 100%;
     margin: 1rem 0;
 }
 
@@ -305,6 +310,10 @@ input[type="submit"]:hover,
     border: 1px solid var(--bg-dark);
     border-radius: 8px;
     background-color: var(--pale-green);
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
 }
 
 .calendar-navigation span {
@@ -330,8 +339,10 @@ input[type="submit"]:hover,
 }
 
 .calendar-navigation a:hover {
-    color: var(--bg-dark);
-    text-decoration: underline;
+    color: var(--pale-green);
+    background-color: var(--bg-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(68, 86, 81, 0.25);
 }
 
 .appointments-container {
@@ -354,13 +365,12 @@ input[type="submit"]:hover,
 }
 
 .termin-empty {
-    grid-column: 1 / -1;
     margin: 0;
 }
 
 .termin-list {
     display: grid;
-    grid-template-columns: repeat(4, 180px);
+    grid-template-columns: repeat(4, 1fr);
     gap: 0.6rem;
 }
 
@@ -383,18 +393,42 @@ input[type="submit"]:hover,
 .buchbar {
     background-color: var(--bg-dark);
     color: var(--white);
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
 }
 
 .buchbar:hover {
     background-color: var(--green);
-    color: var(--white);
-}
+    color: var(--bg-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(68, 86, 81, 0.25);
 
+}
 
 .gebucht {
     background-color: #d6d6d6;
     color: #777;
     cursor: not-allowed;
+}
+
+/*--login page--*/
+
+.login-form-container {
+    margin: 1.5rem 0;
+    padding: 1.25rem;
+
+    background-color: var(--light-green);
+    border-radius: 8px;
+}
+
+.login-form-container form {
+    margin: 0;
+}
+
+.login-info h3 {
+    border-bottom: 1px solid var(--green);
 }
 
 
@@ -450,7 +484,23 @@ input[type="submit"]:hover,
     text-decoration: underline;
 }
 
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+button:focus-visible,
+.button:focus-visible,
+.buchbar:focus-visible,
+.calendar-nav-btn:focus-visible,
+.main-nav a:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 3px;
+}
 
+@media (max-width: 800px) {
+    .termin-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
 
 @media (max-width: 600px) {
     .main-nav-content {
@@ -489,7 +539,10 @@ input[type="submit"]:hover,
         min-height: 40px;
     }
 
-    .termin-slot {
-        flex: 1 1 140px;
+}
+
+@media (max-width: 450px) {
+    .termin-list {
+        grid-template-columns: 1fr;
     }
 }
