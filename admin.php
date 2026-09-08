@@ -151,11 +151,5 @@ foreach($alledate as $datum) {
         }?>
     </div>
 </form>
-
-    <h1>Logout Button</h1>
-        <form method="post">
-            <input type="hidden" name="form_type" value="logout">
-		    <button type="submit">Ausloggen</button>
-</form>
     <?php require_once __DIR__ . "/includes/footer.inc.php"; ?>
 <?php $conn->close(); ?>

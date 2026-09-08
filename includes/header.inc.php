@@ -40,12 +40,33 @@ $actualPageTitle = $pageTitles[$currentPage] ?? 'Terminbuchung';
             Startseite
         </a>
 
+    <?php if (!empty($_SESSION["eingeloggt"])): ?>
+
+        <a
+            href="admin.php"
+            class="<?= $currentPage === 'admin.php' ? 'active' : '' ?>"
+        >
+            Admin
+        </a>
+
+        <form method="post" action="admin.php" class="logout-form">
+            <input type="hidden" name="form_type" value="logout">
+
+            <button type="submit" class="logout-btn">
+                Ausloggen
+            </button>
+        </form>
+
+    <?php else: ?>
+
         <a
             href="einloggen.php"
             class="<?= $currentPage === 'einloggen.php' ? 'active' : '' ?>"
         >
             Admin Login
         </a>
+
+    <?php endif; ?>
     </div>
 </div>
 

@@ -431,6 +431,22 @@ input[type="submit"]:hover,
     border-bottom: 1px solid var(--green);
 }
 
+.logout-form {
+    margin: 0;
+}
+
+.logout-btn {
+    padding: 0.4rem 0.8rem;
+    background-color: transparent;
+    color: var(--light-bg);
+    border: 1px solid var(--light-green);
+}
+
+.logout-btn:hover {
+    background-color: var(--green);
+    color: var(--bg-dark);
+}
+
 
 /* --- footer --- */
 
