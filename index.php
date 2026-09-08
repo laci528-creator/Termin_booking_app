@@ -13,11 +13,24 @@ $conn = dbConnect();
 // anfrage mysql, ob der Termin schon gebucht ist oder nicht; 
 
 if (isset($_GET['book_datum'], $_GET['book_termin'])) {
-    $_SESSION['selecteddatum'] = $_GET['book_datum'];
-    $_SESSION['selectedtermin'] = $_GET['book_termin'];
+    $bookDatum = $_GET['book_datum'];
+    $bookTermin = $_GET['book_termin'];
 
-    header("Location: formular.php");
-    exit;
+    $terminSlot = findeTerminSlot(
+        $conn,
+        $bookDatum,
+        $bookTermin
+    );
+
+    if ($terminSlot !== null) {
+
+        $_SESSION['selecteddatum'] = $bookDatum;
+        $_SESSION['selectedtermin'] = $bookTermin;
+
+        header("Location: formular.php");
+        exit;
+    }
+
 }
 
 $success_msg = '';
@@ -34,8 +47,14 @@ if (isset($_SESSION['booking_success'])) {
 }
 
 $heute = new DateTime();
+
+$aktualDate = $heute->format('Y-m-d');
 $startGrenze = new DateTime($heute->format('Y-m-01'));   // aktuális hónap első napja
 $endGrenze = (clone $startGrenze)->modify('+3 months');  // 3 hónappal később
+
+$maxBuchbar = (clone $heute)
+    ->modify('+3 months')
+    ->format('Y-m-d');
 
 $jahr = isset($_GET['jahr']) ? (int)$_GET['jahr'] : (int)$heute->format('Y');
 $monat = isset($_GET['monat']) ? (int)$_GET['monat'] : (int)$heute->format('m');
@@ -163,9 +182,6 @@ if ($dt !== null) {
 
                     $siebenTag = $ersteTaginWoche;
 
-                    // Erstellt für jeden Tag des Monats eine Zelle mit einem Datumslink.
-                    $aktualDate = date('Y-m-d');
-                    $maxBuchbar = (new DateTime())->modify('+3 months')->format('Y-m-d');
                     for ($tag = 1; $tag <= $nummerdesTages; $tag++, $siebenTag++) { 
                         $datum = sprintf('%04d-%02d-%02d', $jahr, $monat, $tag);
                         $wochentag = date('N', strtotime($datum));
