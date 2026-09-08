@@ -256,6 +256,4 @@ $conn->close();
 			</fieldset>
 			<input type="submit" value="Termin buchen">
 		</form>
-        <h1>Zurück zur Indexseite</h1>
-		<a href="index.php" class="button">Zurück zur Indexseite</a>
     <?php require_once __DIR__ . "/includes/footer.inc.php"; ?>
