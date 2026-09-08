@@ -9,8 +9,18 @@ require_once __DIR__ . "/includes/date_functions.inc.php";
 session_start();
 $conn = dbConnect();
 
+$heute = new DateTime();
 
-// anfrage mysql, ob der Termin schon gebucht ist oder nicht; 
+$aktualDate = $heute->format('Y-m-d');
+$startGrenze = new DateTime($heute->format('Y-m-01'));   // aktuális hónap első napja
+$endGrenze = (clone $startGrenze)->modify('+3 months');  // 3 hónappal később
+
+$maxBuchbar = (clone $heute)
+    ->modify('+3 months')
+    ->format('Y-m-d');
+
+
+// Validiert den ausgewählten Termin und speichert ihn in der Session.
 
 if (isset($_GET['book_datum'], $_GET['book_termin'])) {
     $bookDatum = $_GET['book_datum'];
@@ -22,8 +32,11 @@ if (isset($_GET['book_datum'], $_GET['book_termin'])) {
         $bookTermin
     );
 
-    if ($terminSlot !== null) {
-
+    if (
+        $terminSlot !== null &&
+        $bookDatum >= $aktualDate &&
+        $bookDatum <= $maxBuchbar
+    ) {
         $_SESSION['selecteddatum'] = $bookDatum;
         $_SESSION['selectedtermin'] = $bookTermin;
 
@@ -45,16 +58,6 @@ if (isset($_SESSION['booking_success'])) {
 
     unset($_SESSION['booking_success']);
 }
-
-$heute = new DateTime();
-
-$aktualDate = $heute->format('Y-m-d');
-$startGrenze = new DateTime($heute->format('Y-m-01'));   // aktuális hónap első napja
-$endGrenze = (clone $startGrenze)->modify('+3 months');  // 3 hónappal később
-
-$maxBuchbar = (clone $heute)
-    ->modify('+3 months')
-    ->format('Y-m-d');
 
 $jahr = isset($_GET['jahr']) ? (int)$_GET['jahr'] : (int)$heute->format('Y');
 $monat = isset($_GET['monat']) ? (int)$_GET['monat'] : (int)$heute->format('m');
@@ -108,6 +111,7 @@ if ($selecteddatum !== '') {
 }
 
 $ordinationZeiten = [];
+$gebuchteTermine = [];
 
 if ($dt !== null) {
 
@@ -117,11 +121,16 @@ if ($dt !== null) {
         $conn,
         $wochentag
     );
+
+        $gebuchteTermine = holeGebuchteTermine(
+        $conn,
+        $selecteddatum
+    );
 }
 
 ?>
 
-        <?php require_once __DIR__ . "/includes/header.inc.php"; ?>
+    <?php require_once __DIR__ . "/includes/header.inc.php"; ?>
         <h1>Terminvereinbarung</h1>
         <?php echo $success_msg; ?>
         <p>Willkommen auf unserer Terminvereinbarungsseite! Hier können Sie ganz einfach einen Termin für Ihre nächste Konsultation oder Behandlung vereinbaren. 
@@ -171,10 +180,10 @@ if ($dt !== null) {
                         $wochentag = date('N', strtotime($datum));
 
                         if ($wochentag >= 6) { 
-                            echo "<td style='color: gray;'>$tag</td>";
+                            echo "<td class='calendar-disabled'>$tag</td>";
                         }
                         elseif ($datum < $aktualDate || $datum > $maxBuchbar) {
-                            echo "<td style='color: gray;'>$tag</td>";
+                            echo "<td class='calendar-disabled'>$tag</td>";
                         } else {
                             echo "<td><a href='?jahr=" . $jahr . "&monat=" . $monat . "&datum=" . urlencode($datum) . "'>$tag</a></td>";
                         }
@@ -214,11 +223,11 @@ if ($dt !== null) {
                 // Prüft für jeden Termin, ob er bereits gebucht ist.
                 // Freie Termine werden als Link zum Buchungsformular angezeigt.
                 foreach ($alles as $termin) {   
-                    $istGebucht = pruefeTermin($conn, $selecteddatum, $termin);
+                    $istGebucht = isset($gebuchteTermine[$termin]);
 
                     if ($istGebucht) {
                     echo '<span class="termin-slot gebucht">'
-                        . htmlspecialchars($termin)
+                        . htmlspecialchars(substr($termin, 0, 5), ENT_QUOTES, 'UTF-8')
                         . '</span>';
                     } 
                     else {
@@ -233,14 +242,12 @@ if ($dt !== null) {
                                 . "&book_termin=" 
                                 . urlencode($termin) 
                                 . "'>"
-                                . htmlspecialchars($termin)
+                                . htmlspecialchars(substr($termin, 0, 5), ENT_QUOTES, 'UTF-8')
                                 . "</a>";
                         }
                     }
                 }
             ?>
-
-
             </div>
                 <?php else: ?>
 

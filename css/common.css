@@ -199,7 +199,7 @@ input[type="submit"]:hover,
 
 .success {
     background-color: var(--pale-green);
-    border-left: 4px solid var(--green);
+    border: 2px solid var(--green);
 }
 
 .error {
@@ -343,6 +343,11 @@ input[type="submit"]:hover,
     background-color: var(--bg-dark);
     transform: translateY(-2px);
     box-shadow: 0 4px 10px rgba(68, 86, 81, 0.25);
+}
+
+.calendar-disabled {
+    color: #999;
+    background-color: #3a3131;
 }
 
 .appointments-container {

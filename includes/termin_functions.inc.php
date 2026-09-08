@@ -97,6 +97,34 @@ function pruefeTermin(mysqli $conn, string $datum, string $anfang_zeit, ?int $ex
     return $istGebucht;
 }
 
+function holeGebuchteTermine(
+    mysqli $conn,
+    string $datum
+): array {
+
+    $sql = "
+        SELECT anfang_zeit
+        FROM gespeicherte_termin
+        WHERE datum = ?
+    ";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $datum);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+
+    $termine = [];
+
+    while ($row = $result->fetch_assoc()) {
+        $termine[$row['anfang_zeit']] = true;
+    }
+
+    $stmt->close();
+
+    return $termine;
+}
+
 function validiereTermin(string $datum, string $anfang_zeit, string $ende_zeit): ?string {
 	    if (empty($datum) || empty($anfang_zeit) || empty($ende_zeit)) {
         return "Bitte wählen Sie einen gültigen Termin aus.";
