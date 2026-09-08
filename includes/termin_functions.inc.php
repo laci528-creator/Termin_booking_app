@@ -19,6 +19,37 @@ function generiereTerminSlots(string $anfang_zeit, string $ende_zeit, int $inter
     return $termine;
 }
 
+function holeOrdinationszeiten(
+    mysqli $conn,
+    int $wochentag
+): array {
+
+    $sql = "
+        SELECT
+            start_zeit,
+            ende_zeit,
+            slot_dauer
+        FROM ordination_zeiten
+        WHERE
+            wochentag = ?
+            AND aktiv = 1
+        ORDER BY start_zeit
+    ";
+
+    $stmt = $conn->prepare($sql);
+
+    $stmt->bind_param("i", $wochentag);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+
+    $zeiten = $result->fetch_all(MYSQLI_ASSOC);
+
+    $stmt->close();
+
+    return $zeiten;
+}
+
 function pruefeTermin(mysqli $conn, string $datum, string $anfang_zeit, ?int $excludeId = null): bool
 {
     if ($excludeId === null) {

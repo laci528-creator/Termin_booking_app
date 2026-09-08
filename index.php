@@ -96,8 +96,14 @@ if ($selecteddatum !== '') {
 
     $dt = DateTime::createFromFormat('Y-m-d', $selecteddatum);
 
-    if (!$dt || $dt->format('Y-m-d') !== $selecteddatum) {
+    if (
+        !$dt ||
+        $dt->format('Y-m-d') !== $selecteddatum ||
+        $selecteddatum < $aktualDate ||
+        $selecteddatum > $maxBuchbar
+    ) {
         $dt = null;
+        $selecteddatum = '';
     }
 }
 
@@ -107,32 +113,10 @@ if ($dt !== null) {
 
     $wochentag = (int)$dt->format('N');
 
-    $sql = "
-        SELECT
-            start_zeit,
-            ende_zeit,
-            slot_dauer
-        FROM ordination_zeiten
-        WHERE
-            wochentag = ?
-            AND aktiv = 1
-        ORDER BY start_zeit
-    ";
-
-    $stmt = $conn->prepare($sql);
-
-    if (!$stmt) {
-        die("SQL Fehler bei Ordinationszeiten: " . $conn->error);
-    }
-
-    $stmt->bind_param("i", $wochentag);
-    $stmt->execute();
-
-    $result = $stmt->get_result();
-
-    $ordinationZeiten = $result->fetch_all(MYSQLI_ASSOC);
-
-    $stmt->close();
+    $ordinationZeiten = holeOrdinationszeiten(
+        $conn,
+        $wochentag
+    );
 }
 
 ?>
