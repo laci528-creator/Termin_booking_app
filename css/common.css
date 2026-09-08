@@ -447,6 +447,87 @@ input[type="submit"]:hover,
     color: var(--bg-dark);
 }
 
+/* --- Admin table --- */
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    margin: 1rem auto;
+}
+
+.admin-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 0.4rem 0rem;
+    border: 1px solid var(--bg-dark);
+    text-align: center;
+}
+
+.admin-table th {
+    background-color: var(--light-green);
+    color: var(--text-dark);
+    padding: 0.65rem 0.4rem;
+}
+
+.admin-table input {
+    width: 100%;
+    min-width: 0;
+    padding: 0.5rem 0.1rem;
+    background-color: var(--light-green);
+}
+
+.admin-table th:nth-child(1) {
+    width: 90px;
+}
+
+.admin-table th:nth-child(2),
+.admin-table th:nth-child(3) {
+    width: auto;
+}
+
+.admin-table th:nth-child(4) {
+    width: 150px;
+}
+
+.admin-table th:nth-child(5) {
+    width: 150px;
+}
+
+.admin-table th:nth-child(6) {
+    width: 170px;
+}
+
+.admin-table th:nth-child(7) {
+    width: auto;
+}
+
+.admin-table th:nth-child(8) {
+    width: auto;
+}
+
+.admin-table th:nth-child(9) {
+    width: 70px;
+}
+
+.delete-btn {
+    background-color: #b85c5c;
+    color: var(--white);
+}
+
+.delete-btn:hover {
+    background-color: #8f3f3f;
+}
+
+.update-btn {
+    background-color: var(--green);
+}
+
+
 
 /* --- footer --- */
 

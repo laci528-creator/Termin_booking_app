@@ -71,7 +71,7 @@ $terminCount = 0;
 
 <?php require_once __DIR__ . "/includes/header.inc.php"; ?>
 
-<h1>Gebuchte Termine <br> von <?php echo htmlspecialchars($gefragtedatum, ENT_QUOTES, 'UTF-8');?> und naechste zwei woche</h1>
+<h3>Gebuchte Termine ab dem <?php echo htmlspecialchars($gefragtedatum, ENT_QUOTES, 'UTF-8');?> für die naechste zwei woche</h3>
         <form method="post">
             <input type="hidden" name="form_type" value="datum_andern">
             <label>
@@ -85,17 +85,17 @@ $terminCount = 0;
     <input type="hidden" name="form_type" value="termin_bearbeiten">
     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES,'UTF-8'); ?>">
 <div class="table-wrapper">
-    <table border="1" cellpadding="5" cellspacing="0">  
+    <table class="admin-table">  
         <tr>
             <th>Datum</th>
-            <th>Anfangszeit</th>
-            <th>Endezeit</th>
+            <th>Anfang</th>
+            <th>Ende</th>
             <th>Name</th>
             <th>Telefon</th>
             <th>Email</th>
             <th>Bemerkung</th>
-            <th>Delete</th>
-            <th>Update</th>
+            <th>Löschen</th>
+            <th>Ändern</th>
         </tr>   
 <?php
 if ($gefragtedatum === '') {
@@ -135,8 +135,8 @@ foreach($alledate as $datum) {
                 echo "<td><input type='text' value='" . htmlspecialchars($data->telefon, ENT_QUOTES, 'UTF-8') . "' name='telefon[" . $id_termin . "]'></td>";
                 echo "<td><input type='text' value='" . htmlspecialchars($data->email, ENT_QUOTES, 'UTF-8') . "' name='email[" . $id_termin . "]'></td>";
                 echo "<td><input type='text' value='" . htmlspecialchars($data->bemerkung ?? '', ENT_QUOTES, 'UTF-8') . "' name='bemerkung[" . $id_termin . "]'></td>";
-                echo "<td><button type='submit' name='delete' value='" . $id_termin . "'>X</button></td>";
-                echo "<td><button type='submit' name='update' value='" . $id_termin . "'>Upd</button></td>";
+                echo "<td><button class='delete-btn' type='submit' name='delete' value='" . $id_termin . "'>X</button></td>";
+                echo "<td><button class='update-btn' type='submit' name='update' value='" . $id_termin . "'>Andern</button></td>";
                 echo "</tr>";
             }
         }
