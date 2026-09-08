@@ -4,6 +4,7 @@ require_once __DIR__ . "/includes/config.inc.php";
 require_once __DIR__ . "/includes/common.inc.php";
 require_once __DIR__ . "/includes/db.inc.php";
 require_once __DIR__ . "/includes/termin_functions.inc.php";
+require_once __DIR__ . "/includes/mail_functions.inc.php";
 
 session_start();
 
@@ -155,9 +156,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         $conn->commit();
 
+                        // E-Mail-Bestätigung nach erfolgreicher Buchung senden.
+                        $emailGesendet = sendeTerminBestaetigung(
+                            $email,
+                            $nachname,
+                            $datum,
+                            $anfang_zeit
+                        );
+
                         $_SESSION['booking_success'] = [
                             'datum' => $datum,
-                            'anfang_zeit' => $anfang_zeit
+                            'anfang_zeit' => $anfang_zeit,
+                            'email_gesendet' => $emailGesendet
                         ];
 
                         unset(

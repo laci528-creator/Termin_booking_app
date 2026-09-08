@@ -51,10 +51,14 @@ $success_msg = '';
 if (isset($_SESSION['booking_success'])) {
     $datum = $_SESSION['booking_success']['datum'];
     $anfang_zeit = $_SESSION['booking_success']['anfang_zeit'];
+    $emailGesendet = $_SESSION['booking_success']['email_gesendet'] ?? false;
 
     $success_msg = '<p class="success">Termin erfolgreich gebucht!<br>
     Wir heißen Sie herzlich willkommen am ' . htmlspecialchars(formatiereDatumDeutsch($datum)) . 
     ' um ' . htmlspecialchars(substr($anfang_zeit, 0, 5)) . ' Uhr.</p>';
+    if ($emailGesendet) {
+        $success_msg .= '<br>Eine Terminbestätigung wurde per E-Mail versendet.';
+    }
 
     unset($_SESSION['booking_success']);
 }
