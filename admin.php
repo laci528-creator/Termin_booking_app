@@ -76,7 +76,7 @@ $terminCount = 0;
                                         formatiereDatumDeutsch($gefragtedatum),
                                         ENT_QUOTES,
                                         'UTF-8'
-                                    ) ?> für die naechste zwei woche</h3>
+                                    ) ?> für die nächsten zwei woche</h3>
         <form method="post">
             <input type="hidden" name="form_type" value="datum_andern">
             <label>
@@ -134,8 +134,8 @@ foreach($alledate as $datum) {
                 $id_termin = $data->id;
                 echo "<tr>";
                 echo "<td><input type='text' value='" . htmlspecialchars($data->datum, ENT_QUOTES, 'UTF-8') . "' name='datum[" . $id_termin . "]'></td>";
-                echo "<td><input type='text' value='" . htmlspecialchars($data->anfang_zeit, ENT_QUOTES, 'UTF-8') . "' name='anfang_zeit[" . $id_termin . "]'></td>";
-                echo "<td>" . htmlspecialchars($data->ende_zeit, ENT_QUOTES, 'UTF-8') . "</td>";
+                echo "<td><input type='text' value='" . htmlspecialchars(substr($data->anfang_zeit, 0, 5), ENT_QUOTES, 'UTF-8') . "' name='anfang_zeit[" . $id_termin . "]'></td>";
+                echo "<td>" . htmlspecialchars(substr($data->ende_zeit, 0, 5), ENT_QUOTES, 'UTF-8') . "</td>";
                 echo "<td><input type='text' value='" . htmlspecialchars($data->name, ENT_QUOTES, 'UTF-8') . "' name='name[" . $id_termin . "]'></td>";
                 echo "<td><input type='text' value='" . htmlspecialchars($data->telefon, ENT_QUOTES, 'UTF-8') . "' name='telefon[" . $id_termin . "]'></td>";
                 echo "<td><input type='text' value='" . htmlspecialchars($data->email, ENT_QUOTES, 'UTF-8') . "' name='email[" . $id_termin . "]'></td>";
