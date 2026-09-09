@@ -1,9 +1,8 @@
 <?php 
 
+
+
 function generiereTerminSlots(string $anfang_zeit, string $ende_zeit, int $intervall): array { 
-    if ($intervall <= 0) {
-        throw new InvalidArgumentException('die Intervallzeit muss größer als 0 sein.');
-    }
 
     $start = new DateTime($anfang_zeit);
     $end = new DateTime($ende_zeit);
@@ -19,11 +18,10 @@ function generiereTerminSlots(string $anfang_zeit, string $ende_zeit, int $inter
     return $termine;
 }
 
-function holeOrdinationszeiten(
-    mysqli $conn,
-    int $wochentag
-): array {
 
+
+
+function holeOrdinationszeiten(mysqli $conn, int $wochentag): array {
     $sql = "
         SELECT
             start_zeit,
@@ -50,6 +48,9 @@ function holeOrdinationszeiten(
     return $zeiten;
 }
 
+
+
+
 function pruefeTermin(mysqli $conn, string $datum, string $anfang_zeit, ?int $excludeId = null): bool
 {
     if ($excludeId === null) {
@@ -62,11 +63,6 @@ function pruefeTermin(mysqli $conn, string $datum, string $anfang_zeit, ?int $ex
         ";
 
         $stmt = $conn->prepare($sql);
-
-        if (!$stmt) {
-            die("SQL Fehler bei Terminprüfung: " . $conn->error);
-        }
-
         $stmt->bind_param("ss", $datum, $anfang_zeit);
     } else {
         $sql = "
@@ -79,10 +75,6 @@ function pruefeTermin(mysqli $conn, string $datum, string $anfang_zeit, ?int $ex
         ";
 
         $stmt = $conn->prepare($sql);
-
-        if (!$stmt) {
-            die("SQL Fehler bei Terminprüfung: " . $conn->error);
-        }
 
         $stmt->bind_param("ssi", $datum, $anfang_zeit, $excludeId);
     }
@@ -97,10 +89,10 @@ function pruefeTermin(mysqli $conn, string $datum, string $anfang_zeit, ?int $ex
     return $istGebucht;
 }
 
-function holeGebuchteTermine(
-    mysqli $conn,
-    string $datum
-): array {
+
+
+
+function holeGebuchteTermine(mysqli $conn, string $datum): array {
 
     $sql = "
         SELECT anfang_zeit
@@ -125,10 +117,9 @@ function holeGebuchteTermine(
     return $termine;
 }
 
+
+
 function validiereTermin(string $datum, string $anfang_zeit, string $ende_zeit): ?string {
-	    if (empty($datum) || empty($anfang_zeit) || empty($ende_zeit)) {
-        return "Bitte wählen Sie einen gültigen Termin aus.";
-    }
 
 	$datumObjekt = DateTime::createFromFormat('Y-m-d', $datum);
 
@@ -172,11 +163,10 @@ function validiereTermin(string $datum, string $anfang_zeit, string $ende_zeit):
     return null;
 }
 
-function findeTerminSlot(
-    mysqli $conn,
-    string $datum,
-    string $anfang_zeit
-): ?array {
+
+
+
+function findeTerminSlot(mysqli $conn, string $datum, string $anfang_zeit): ?array {
 
     $datumObjekt = DateTime::createFromFormat('Y-m-d', $datum);
 
@@ -190,70 +180,39 @@ function findeTerminSlot(
         return null;
     }
 
-    $wochentag = (int)$datumObjekt->format('N');
+$wochentag = (int)$datumObjekt->format('N');
 
-    $sql = "
-        SELECT
-            start_zeit,
-            ende_zeit,
-            slot_dauer
-        FROM ordination_zeiten
-        WHERE
-            wochentag = ?
-            AND aktiv = 1
-        ORDER BY start_zeit
-    ";
+$ordinationZeiten = holeOrdinationszeiten(
+    $conn,
+    $wochentag
+);
 
-    $stmt = $conn->prepare($sql);
+foreach ($ordinationZeiten as $ordination) {
 
-    if (!$stmt) {
-        throw new RuntimeException(
-            "SQL Fehler bei Ordinationszeiten: " . $conn->error
-        );
+    $start = strtotime($ordination["start_zeit"]);
+    $ende = strtotime($ordination["ende_zeit"]);
+    $termin = strtotime($anfang_zeit);
+
+    $slotDauer = (int)$ordination["slot_dauer"];
+
+    $slotSekunden = $slotDauer * 60;
+
+    if (
+        $termin >= $start &&
+        $termin < $ende &&
+        ($termin - $start) % $slotSekunden === 0 &&
+        $termin + $slotSekunden <= $ende
+    ) {
+        return [
+            "slot_dauer" => $slotDauer,
+            "ende_zeit" => date(
+                "H:i:s",
+                $termin + $slotSekunden
+            )
+        ];
     }
-
-    $stmt->bind_param("i", $wochentag);
-    $stmt->execute();
-
-    $result = $stmt->get_result();
-
-    while ($ordination = $result->fetch_assoc()) {
-
-        $start = strtotime($ordination["start_zeit"]);
-        $ende = strtotime($ordination["ende_zeit"]);
-        $termin = strtotime($anfang_zeit);
-
-        $slotDauer = (int)$ordination["slot_dauer"];
-        if ($slotDauer <= 0) {
-            continue;
-        }
-
-        $slotSekunden = $slotDauer * 60;
-
-        if (
-            $termin >= $start &&
-            $termin < $ende &&
-            ($termin - $start) % $slotSekunden === 0 &&
-            $termin + $slotSekunden <= $ende
-        ) {
-
-            $stmt->close();
-
-            return [
-                "slot_dauer" => $slotDauer,
-                "ende_zeit" => date(
-                    "H:i:s",
-                    $termin + $slotSekunden
-                )
-            ];
-        }
-    }
-
-    $stmt->close();
-
-    return null;
 }
 
+return null;
+}
 
-
-?>
