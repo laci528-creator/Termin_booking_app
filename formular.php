@@ -3,33 +3,45 @@
 require_once __DIR__ . "/includes/config.inc.php";
 require_once __DIR__ . "/includes/common.inc.php";
 require_once __DIR__ . "/includes/db.inc.php";
+require_once __DIR__ . "/includes/date_functions.inc.php";
 require_once __DIR__ . "/includes/termin_functions.inc.php";
 require_once __DIR__ . "/includes/mail_functions.inc.php";
+require_once __DIR__ . "/includes/booking_functions.inc.php";
 
 session_start();
 
 $conn = dbConnect();
 
-
-// daten von der index.php übernehmen, die der Benutzer ausgewählt hat	
 $selecteddatum = $_SESSION['selecteddatum'] ?? '';
 $selectedtermin = $_SESSION['selectedtermin'] ?? '';
 
-$terminende = '';
-$terminSlot = null;
+if (empty($selecteddatum) || empty($selectedtermin)) {
+    header("Location: index.php");
+    exit;
+}
 
-if (!empty($selecteddatum) && !empty($selectedtermin)) {
-
-    $terminSlot = findeTerminSlot(
+$terminSlot = findeTerminSlot(
         $conn,
         $selecteddatum,
         $selectedtermin
     );
 
-    if ($terminSlot !== null) {
-        $terminende = $terminSlot["ende_zeit"];
-    }
+if ($terminSlot === null || istTerminVergangen($selecteddatum, $selectedtermin)) {
+    unset(
+        $_SESSION['selecteddatum'],
+        $_SESSION['selectedtermin']
+    );
+
+    header("Location: index.php");
+    exit;
 }
+
+$terminende = $terminSlot["ende_zeit"];
+
+$nachname = '';
+$telefon = '';
+$email = '';
+$bemerkung = '';
 
 $msg = '';
 
@@ -53,110 +65,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
-            if ($terminSlot !== null) {
-
-                $ende_zeit = $terminSlot["ende_zeit"];
-
                 $fehler = validiereTermin(
                     $datum,
                     $anfang_zeit,
-                    $ende_zeit
+                    $terminende
                 );
 
                 if ($fehler !== null) {
 
                     $msg = '<p class="error">'
-                        . htmlspecialchars($fehler)
+                        . htmlspecialchars($fehler, ENT_QUOTES, 'UTF-8')
                         . '</p>';
 
                 } elseif (!pruefeTermin($conn, $datum, $anfang_zeit)) {
 
-                    $stmt = null;
-                    $conn->begin_transaction();
-
-                    try {
-
-                        $sql_kunden = "
-                            INSERT INTO kunden
-                                (name, telefon, email)
-                            VALUES
-                                (?, ?, ?)
-                        ";
-
-                        $stmt = $conn->prepare($sql_kunden);
-
-                        if (!$stmt) {
-                            throw new Exception(
-                                "SQL Fehler bei Kundendaten: "
-                                . $conn->error
-                            );
-                        }
-
-                        $stmt->bind_param(
-                            "sss",
-                            $nachname,
-                            $telefon,
-                            $email
+                    try {      
+                        speichereTerminBuchung(
+                                    $conn,
+                                    $nachname,
+                                    $telefon,
+                                    $email,
+                                    $datum,
+                                    $anfang_zeit,
+                                    $terminende,
+                                    $bemerkung
                         );
 
-                        $stmt->execute();
-
-                        if ($stmt->affected_rows <= 0) {
-                            throw new Exception(
-                                "Kundendaten konnten nicht gespeichert werden."
-                            );
-                        }
-
-                        $kunden_id = $conn->insert_id;
-
-                        $stmt->close();
-                        $stmt = null;
-
-                        $sql_termin = "
-                            INSERT INTO gespeicherte_termin
-                                (
-                                    kunden_id,
-                                    datum,
-                                    anfang_zeit,
-                                    ende_zeit,
-                                    bemerkung
-                                )
-                            VALUES
-                                (?, ?, ?, ?, ?)
-                        ";
-
-                        $stmt = $conn->prepare($sql_termin);
-
-                        if (!$stmt) {
-                            throw new Exception(
-                                "SQL Fehler beim Termin: "
-                                . $conn->error
-                            );
-                        }
-
-                        $stmt->bind_param(
-                            "issss",
-                            $kunden_id,
-                            $datum,
-                            $anfang_zeit,
-                            $ende_zeit,
-                            $bemerkung
-                        );
-
-                        $stmt->execute();
-
-                        if ($stmt->affected_rows <= 0) {
-                            throw new Exception(
-                                "Termin konnte nicht gespeichert werden."
-                            );
-                        }
-
-                        $stmt->close();
-                        $stmt = null;
-
-                        $conn->commit();
-
-                        // E-Mail-Bestätigung nach erfolgreicher Buchung senden.
                         $emailGesendet = sendeTerminBestaetigung(
                             $email,
                             $nachname,
@@ -178,13 +112,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         header("Location: index.php");
                         exit;
 
-                    } catch (Exception $e) {
+                    } catch (Throwable $e) {
 
-                        $conn->rollback();
-
-                        if ($stmt instanceof mysqli_stmt) {
-                            $stmt->close();
-                        }
 
                         $msg = '<p class="error">
                             Fehler beim Buchen des Termins.
@@ -198,14 +127,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         Bitte wählen Sie einen anderen Termin.
                     </p>';
                 }
-
-            } else {
-
-                $msg = '<p class="error">
-                    Der ausgewählte Termin ist nicht gültig.
-                    Bitte wählen Sie einen verfügbaren Termin aus dem Kalender.
-                </p>';
-            }
 
         } else {
 
@@ -234,34 +155,34 @@ $conn->close();
 				<legend>Personaldaten</legend>
                 <label>
 					Name:
-					<input type="text" name="NN" value="<?= htmlspecialchars($nachname ?? '') ?>" required>
+					<input type="text" name="NN" value="<?= htmlspecialchars($nachname, ENT_QUOTES, 'UTF-8') ?>" required>
 				</label>
                 <label>
                     Telefonnummer:
-                    <input type="tel" name="TN" value="<?= htmlspecialchars($telefon ?? '') ?>" required>
+                    <input type="tel" name="TN" value="<?= htmlspecialchars($telefon, ENT_QUOTES, 'UTF-8') ?>" required>
                 </label>
                     <label>
                         Emailadresse:
-					<input type="email" name="E" value="<?= htmlspecialchars($email ?? '') ?>" required>
+					<input type="email" name="E" value="<?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?>" required>
 				</label>
 			</fieldset>
 			<fieldset>
 				<legend>Termindaten</legend>
 				<label>
 					Datum:
-					<input type="text" name="VN" value="<?php echo htmlspecialchars($selecteddatum); ?>" readonly>
+					<input type="text" name="VN" value="<?= htmlspecialchars(formatiereDatumDeutsch($selecteddatum), ENT_QUOTES, 'UTF-8'); ?>" readonly>
 				</label>
 				<label>
 					Anfangszeit:
-					<input type="text" name="ANF" value="<?php echo htmlspecialchars($selectedtermin); ?>" readonly>
+					<input type="text" name="ANF" value="<?= htmlspecialchars(substr($selectedtermin, 0, 5), ENT_QUOTES, 'UTF-8'); ?>" readonly>
 				</label>
 				<label>
 					Endzeit:
-					<input type="text" name="GD" value="<?php echo htmlspecialchars($terminende); ?>" readonly>
+					<input type="text" name="GD" value="<?= htmlspecialchars(substr($terminende, 0, 5), ENT_QUOTES, 'UTF-8'); ?>" readonly>
 				</label>
                 <label>
                     Bemerkung für den Arzt:
-                    <textarea name="T" rows="4" cols="50"><?= htmlspecialchars($bemerkung ?? '') ?></textarea>
+                    <textarea name="T" rows="4" cols="50"><?= htmlspecialchars($bemerkung, ENT_QUOTES, 'UTF-8') ?></textarea>
                 </label>
 			</fieldset>
 			<input type="submit" value="Termin buchen">
