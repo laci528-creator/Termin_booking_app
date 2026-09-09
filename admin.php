@@ -16,11 +16,17 @@ if (empty($_SESSION["eingeloggt"])) {
     exit;
 }
 
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
+$csrfToken = getCsrfToken();
 
 if($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $csrfTokenPost = $_POST['csrf_token'] ?? '';
+
+    if (!validiereCsrfToken($csrfTokenPost)) {
+        http_response_code(403);
+        die("Ungültige Anfrage.");
+    }
+
     $form_type = $_POST["form_type"] ?? '';
 
         if ($form_type === "logout") {
@@ -28,20 +34,26 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         elseif ($form_type === 'datum_andern') {
+
             $datum = $_POST['datum_andern'] ?? '';
 
-            if ($datum !== '') {
+            $datumObjekt = DateTimeImmutable::createFromFormat(
+                '!Y-m-d',
+                $datum
+            );
+
+            if (
+                $datumObjekt &&
+                $datumObjekt->format('Y-m-d') === $datum
+            ) {
                 $_SESSION["date"] = $datum;
+            } else {
+                $msg = '<p class="error">
+                    Bitte wählen Sie ein gültiges Datum.
+                </p>';
             }
         }
         elseif ($form_type === 'termin_bearbeiten') {
-            if (
-                empty($_POST['csrf_token']) ||
-                !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])
-            ) {
-                die("Ungültige Anfrage.");
-            }
-
 
             if (isset($_POST['delete'])) {
                 $termin_id = (int)$_POST['delete'];
@@ -71,23 +83,20 @@ $terminCount = 0;
 
 <?php require_once __DIR__ . "/includes/header.inc.php"; ?>
 
-<h3>Gebuchte Termine ab dem     <?= htmlspecialchars(
-                                        formatiereDatumDeutsch($gefragtedatum),
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ) ?> für die nächsten zwei woche</h3>
+<h3>Gebuchte Termine ab dem <?= htmlspecialchars(formatiereDatumDeutsch($gefragtedatum), ENT_QUOTES, 'UTF-8') ?> für die nächsten zwei Woche</h3>
         <form method="post">
             <input type="hidden" name="form_type" value="datum_andern">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES,'UTF-8'); ?>">
             <label>
-                Startdatum für abfrage:
+                Startdatum für Abfrage:
                 <input type="date" name="datum_andern">
 			</label><br>
-			<button type="submit">Datum Andern</button>
+			<button type="submit">Datum ändern</button>
 		</form>
 <?php echo $msg; ?>
 <form method="post">
     <input type="hidden" name="form_type" value="termin_bearbeiten">
-    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES,'UTF-8'); ?>">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES,'UTF-8'); ?>">
 <div class="table-wrapper">
     <table class="admin-table">  
         <tr>
@@ -140,7 +149,7 @@ foreach($alledate as $datum) {
                 echo "<td><input type='text' value='" . htmlspecialchars($data->email, ENT_QUOTES, 'UTF-8') . "' name='email[" . $id_termin . "]'></td>";
                 echo "<td><input type='text' value='" . htmlspecialchars($data->bemerkung ?? '', ENT_QUOTES, 'UTF-8') . "' name='bemerkung[" . $id_termin . "]'></td>";
                 echo "<td><button class='delete-btn' type='submit' name='delete' value='" . $id_termin . "'>X</button></td>";
-                echo "<td><button class='update-btn' type='submit' name='update' value='" . $id_termin . "'>Andern</button></td>";
+                echo "<td><button class='update-btn' type='submit' name='update' value='" . $id_termin . "'>Ändern</button></td>";
                 echo "</tr>";
             }
         }

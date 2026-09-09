@@ -127,7 +127,6 @@ if ($selecteddatum) {
         </tr>
         <tr>
             <?php
-            // lehre zeile 
             for ($i = 1; $i < $ersterTagWochentag; $i++) {
                 echo "<td></td>";
             }

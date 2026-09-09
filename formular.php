@@ -10,6 +10,8 @@ require_once __DIR__ . "/includes/booking_functions.inc.php";
 
 session_start();
 
+$csrfToken = getCsrfToken();
+
 $conn = dbConnect();
 
 $selecteddatum = $_SESSION['selecteddatum'] ?? '';
@@ -46,6 +48,13 @@ $bemerkung = '';
 $msg = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $csrfTokenPost = $_POST['csrf_token'] ?? '';
+
+    if (!validiereCsrfToken($csrfTokenPost)) {
+        http_response_code(403);
+        die("Ungültige Anfrage.");
+    }
 
     $nachname = trim($_POST['NN'] ?? '');
     $telefon = trim($_POST['TN'] ?? '');
@@ -151,6 +160,7 @@ $conn->close();
 		<?php echo $msg; // Fehlermeldung anzeigen, falls vorhanden ?>
         <h2>Formular</h2>
 		<form method="post">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES,'UTF-8'); ?>">
 			<fieldset>
 				<legend>Personaldaten</legend>
                 <label>

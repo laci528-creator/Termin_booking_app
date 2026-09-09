@@ -51,7 +51,7 @@ $actualPageTitle = $pageTitles[$currentPage] ?? 'Terminbuchung';
 
         <form method="post" action="admin.php" class="logout-form">
             <input type="hidden" name="form_type" value="logout">
-
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES,'UTF-8'); ?>">
             <button type="submit" class="logout-btn">
                 Ausloggen
             </button>
