@@ -121,21 +121,21 @@ function holeGebuchteTermine(mysqli $conn, string $datum): array {
 
 function validiereTermin(string $datum, string $anfang_zeit, string $ende_zeit): ?string {
 
-	$datumObjekt = DateTime::createFromFormat('Y-m-d', $datum);
+	$datumObjekt = DateTime::createFromFormat('!Y-m-d', $datum);
 
     if (!$datumObjekt || $datumObjekt->format('Y-m-d') !== $datum) {
         return "Das Datum ist ungültig.";
     }
 
-	$startObjekt = DateTime::createFromFormat('H:i:s', $anfang_zeit);
-    $endeObjekt = DateTime::createFromFormat('H:i:s', $ende_zeit);
+	$startObjekt = DateTime::createFromFormat('!H:i:s', $anfang_zeit);
+    $endeObjekt = DateTime::createFromFormat('!H:i:s', $ende_zeit);
 
-	 if (
+	if (
         !$startObjekt || 
         !$endeObjekt ||
         $startObjekt->format('H:i:s') !== $anfang_zeit ||
         $endeObjekt->format('H:i:s') !== $ende_zeit
-     ) {
+    ) {
         return "Die Uhrzeit ist ungültig.";
     }
 
@@ -143,14 +143,24 @@ function validiereTermin(string $datum, string $anfang_zeit, string $ende_zeit):
         return "Die Anfangszeit muss vor der Endzeit liegen.";
     }
 
+    $terminDatumZeit = DateTimeImmutable::createFromFormat(
+    '!Y-m-d H:i:s',
+    "$datum $anfang_zeit"
+    );
+
+    if (!$terminDatumZeit) {
+        return "Der Termin ist ungültig.";
+    }
+
     $heute = new DateTime('today');
+    $jetzt = new DateTimeImmutable();
     $maxDatum = (clone $heute)->modify('+3 months');
 
     if ($datumObjekt > $maxDatum) {
     return "Termine können maximal drei Monate im Voraus gebucht werden.";
     }
 
-    if ($datumObjekt < $heute) {
+    if ($terminDatumZeit < $jetzt) {
         return "Termine in der Vergangenheit sind nicht erlaubt.";
     }
 
@@ -216,3 +226,18 @@ foreach ($ordinationZeiten as $ordination) {
 return null;
 }
 
+
+
+function istTerminVergangen(string $datum, string $anfang_zeit): bool {
+
+    $terminDatumZeit = DateTimeImmutable::createFromFormat(
+        '!Y-m-d H:i:s',
+        "$datum $anfang_zeit"
+    );
+
+    if (!$terminDatumZeit) {
+        return false;
+    }
+
+    return $terminDatumZeit < new DateTimeImmutable();
+}
