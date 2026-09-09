@@ -7,8 +7,6 @@ require_once __DIR__ . '/date_functions.inc.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/mail_config.inc.php';
 
 function sendeTerminBestaetigung(
     string $email,
