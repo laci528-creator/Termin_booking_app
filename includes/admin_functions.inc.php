@@ -213,3 +213,96 @@ function updateTermin(
         </p>
     ";
 }
+
+function handleDatumAendern(array $post): string
+{
+    $datum = trim($post['datum_andern'] ?? '');
+
+    if ($datum === '') {
+        return "<p class='error'>
+            Bitte wählen Sie ein Datum.
+        </p>";
+    }
+
+    $datumObjekt = DateTimeImmutable::createFromFormat(
+        '!Y-m-d',
+        $datum
+    );
+
+    if (
+        !$datumObjekt ||
+        $datumObjekt->format('Y-m-d') !== $datum
+    ) {
+        return "<p class='error'>
+            Bitte wählen Sie ein gültiges Datum.
+        </p>";
+    }
+
+    $_SESSION["date"] = $datum;
+
+    return '';
+}
+
+
+
+function handleTerminBearbeiten(
+    mysqli $conn,
+    array $post
+): string {
+
+    if (isset($post['delete'])) {
+        $termin_id = (int)$post['delete'];
+
+        if ($termin_id <= 0) {
+            return "<p class='error'>Ungültige Termin-ID.</p>";
+        }
+
+        return deleteTermin($conn, $termin_id);
+    }
+
+    if (isset($post['update'])) {
+        $termin_id = (int)$post['update'];
+
+        if ($termin_id <= 0) {
+            return "<p class='error'>Ungültige Termin-ID.</p>";
+        }
+
+        $datum = trim($post['datum'][$termin_id] ?? '');
+        $anfang_zeit = trim($post['anfang_zeit'][$termin_id] ?? '');
+        $name = trim($post['name'][$termin_id] ?? '');
+        $telefon = trim($post['telefon'][$termin_id] ?? '');
+        $email = trim($post['email'][$termin_id] ?? '');
+        $bemerkung = trim($post['bemerkung'][$termin_id] ?? '');
+
+        if (
+            $datum === '' ||
+            $anfang_zeit === '' ||
+            $name === '' ||
+            $telefon === '' ||
+            $email === ''
+        ) {
+            return "<p class='error'>
+                Bitte füllen Sie alle Pflichtfelder aus.
+            </p>";
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return "<p class='error'>
+                Bitte geben Sie eine gültige E-Mail-Adresse ein.
+            </p>";
+        }
+
+        return updateTermin(
+            $conn,
+            $termin_id,
+            $datum,
+            $anfang_zeit,
+            $name,
+            $telefon,
+            $email,
+            $bemerkung
+        );
+    }
+
+    return "<p class='error'>Ungültige Aktion.</p>";
+}

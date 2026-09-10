@@ -18,7 +18,7 @@ if (empty($_SESSION["eingeloggt"])) {
 
 $csrfToken = getCsrfToken();
 
-if($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $csrfTokenPost = $_POST['csrf_token'] ?? '';
 
@@ -29,51 +29,17 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $form_type = $_POST["form_type"] ?? '';
 
-        if ($form_type === "logout") {
-            logoutUser();
-        }
+    if ($form_type === "logout") {
+        logoutUser();
+    }
 
-        elseif ($form_type === 'datum_andern') {
+    elseif ($form_type === "datum_andern") {
+        $msg = handleDatumAendern($_POST);
+    }
 
-            $datum = $_POST['datum_andern'] ?? '';
-
-            $datumObjekt = DateTimeImmutable::createFromFormat(
-                '!Y-m-d',
-                $datum
-            );
-
-            if (
-                $datumObjekt &&
-                $datumObjekt->format('Y-m-d') === $datum
-            ) {
-                $_SESSION["date"] = $datum;
-            } else {
-                $msg = '<p class="error">
-                    Bitte wählen Sie ein gültiges Datum.
-                </p>';
-            }
-        }
-        elseif ($form_type === 'termin_bearbeiten') {
-
-            if (isset($_POST['delete'])) {
-                $termin_id = (int)$_POST['delete'];
-                $msg = deleteTermin($conn, $termin_id);
-            
-            }
-            elseif (isset($_POST['update'])) {
-                $termin_id = (int)$_POST['update'];
-                $msg = updateTermin(    
-                    $conn,
-                    $termin_id,
-                    $_POST['datum'][$termin_id] ?? '',
-                    $_POST['anfang_zeit'][$termin_id] ?? '',
-                    $_POST['name'][$termin_id] ?? '',
-                    $_POST['telefon'][$termin_id] ?? '',
-                    $_POST['email'][$termin_id] ?? '',
-                    $_POST['bemerkung'][$termin_id] ?? ''
-                );
-            }
-        }
+    elseif ($form_type === "termin_bearbeiten") {
+        $msg = handleTerminBearbeiten($conn, $_POST);
+    }
 }
 
 $gefragtedatum = $_SESSION["date"] ?? '';
