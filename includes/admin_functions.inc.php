@@ -47,33 +47,99 @@ function deleteTermin($conn, int $termin_id): string {
         return "<p class='error'>Fehler beim Löschen des Termins: " . $conn->error . "</p>";
 }*/
 
-function deleteTermin($conn, int $termin_id): string {
-    $sql = "
-    DELETE FROM gespeicherte_termin
-    WHERE id = ?
-";
+function deleteTermin(mysqli $conn, int $termin_id): string
+{
+    $conn->begin_transaction();
 
-    $stmt = $conn->prepare($sql);
-    if (!$stmt) {
-    throw new RuntimeException("SQL preparation failed.");
-    }
-    $stmt->bind_param("i", $termin_id);
-    if ($stmt->execute()) {
+    try {
+        $sql = "
+            SELECT kunden_id
+            FROM gespeicherte_termin
+            WHERE id = ?
+        ";
 
-        if($stmt->affected_rows === 0) {
-        $stmt->close();
+        $stmt = $conn->prepare($sql);
 
-            return "<p class='error'>Der Termin wurde nicht gefunden.</p>";
+        if (!$stmt) {
+            throw new RuntimeException("SQL preparation failed.");
         }
+
+        $stmt->bind_param("i", $termin_id);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+        $termin = $result->fetch_assoc();
+
         $stmt->close();
 
-        return "<p class='success'>Termin erfolgreich gelöscht.</p>";
+        if (!$termin) {
+            $conn->rollback();
+
+            return "<p class='error'>
+                Der Termin wurde nicht gefunden.
+            </p>";
+        }
+
+        $kunden_id = (int)$termin["kunden_id"];
+
+        $sql = "
+            DELETE FROM gespeicherte_termin
+            WHERE id = ?
+        ";
+
+        $stmt = $conn->prepare($sql);
+
+        if (!$stmt) {
+            throw new RuntimeException("SQL preparation failed.");
+        }
+
+        $stmt->bind_param("i", $termin_id);
+        $stmt->execute();
+        $stmt->close();
+
+        $sql = "
+            DELETE FROM kunden
+            WHERE id = ?
+            AND NOT EXISTS (
+                SELECT 1
+                FROM gespeicherte_termin
+                WHERE kunden_id = ?
+            )
+        ";
+
+        $stmt = $conn->prepare($sql);
+
+        if (!$stmt) {
+            throw new RuntimeException("SQL preparation failed.");
+        }
+
+        $stmt->bind_param(
+            "ii",
+            $kunden_id,
+            $kunden_id
+        );
+
+        $stmt->execute();
+        $stmt->close();
+
+        $conn->commit();
+
+        return "<p class='success'>
+            Termin erfolgreich gelöscht.
+        </p>";
+
+    } catch (Throwable $e) {
+
+        $conn->rollback();
+
+        error_log(
+            "Fehler beim Löschen des Termins: " . $e->getMessage()
+        );
+
+        return "<p class='error'>
+            Beim Löschen des Termins ist ein Fehler aufgetreten.
+        </p>";
     }
-    error_log("Fehler beim Löschen des Termins: " . $stmt->error);
-
-    $stmt->close();
-
-    return "<p class='error'>Beim Löschen des Termins ist ein Fehler aufgetreten.</p>";
 }
 
 /*
